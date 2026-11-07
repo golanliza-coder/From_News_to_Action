@@ -1,0 +1,12 @@
+streamlit
+pandas
+numpy
+psycopg[binary]
+psycopg2-binary
+plotly
+pydeck
+telethon
+feedparser
+google-genai
+googlemaps
+tqdm
