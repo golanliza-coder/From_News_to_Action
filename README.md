@@ -28,33 +28,37 @@ The pipeline ingests raw, unstructured text from multiple real-time streams:
 
 ### System Pipeline Architecture
 
-```text
-[ Raw Hebrew Text: News / Telegram / MDA ]
-                   │
-                   ▼
-┌────────────────────────────────────────────────────────┐
-│ Step 1: LLM Structuring (JSON Schema)                 │
-│ Extracts: Severity, Vehicles, Human & Infra Factors   │
-└────────────────────────┬───────────────────────────────┘
-                         │
-                         ▼
-┌────────────────────────────────────────────────────────┐
-│ Step 2: Spatial Geocoding & Contextual Enrichment      │
-│ Verbal Location --> OpenStreetMap / Google Maps API    │
-└────────────────────────┬───────────────────────────────┘
-                         │
-                         ▼
-┌────────────────────────────────────────────────────────┐
-│ Step 3: Data Flywheel & Conflict Resolution (DCAI)     │
-│ Deduplication (Spatial 500m / Temporal 1h Clustering) │
-└────────────────────────┬───────────────────────────────┘
-                         │
-                         ▼
-┌────────────────────────────────────────────────────────┐
-│ Step 4: Storage & Real-Time Dashboard                  │
-│ PostgreSQL + PostGIS --> BI Dashboard (Grafana/PowerBI)│
-└────────────────────────┴───────────────────────────────┘
-```
+```mermaid
+flowchart TD
+    subgraph BASELINE ["BASELINE"]
+        BL1["Baseline Rules & Initial Heuristics"] --> BL2["Baseline Extraction & Comparison"]
+    end
+
+    subgraph L1 ["LAYER 1: DATA INGESTION"]
+        A1["Sources: Hamal / Telegram / ynet / Ihud Hazala / Zaka / Fire and Rescue Services"] --> A2["Python Ingestion Script"]
+    end
+
+    subgraph L2 ["LAYER 2: LLM EXTRACTION & STRUCTURING (DCAI Engine)"]
+        B1["Raw Text Stream"] --> B2["LLM: GPT-4o-mini / Llama 3.3 + Pydantic JSON Schema"]
+        B2 --> B3["Structured Extraction: severity, vehicle_types, human/infra factors"]
+    end
+
+    subgraph L3 ["LAYER 3: AGENTIC AI CORE, GEOCODING & CONFLICT RESOLUTION"]
+        C1["Verbal Location"] --> C2["OpenStreetMap API Tool (Lat, Lon Conversion)"]
+        C2 --> C3["Spatial Deduplication Engine: Radius 500m + Time Window 1h"]
+        C3 --> C4["Agent Reasoning & Guardrails Engine"]
+    end
+
+    subgraph L4 ["LAYER 4: STORAGE & INSIGHTS"]
+        D1["PostgreSQL + PostGIS Database"] --> D2["Streamlit / PowerBI Live Risk Heatmap Dashboard"]
+    end
+
+    L1 --> L2
+    BASELINE --> L2
+    L2 --> L3
+    L3 --> L4
+  ```
+
 
 ### Core Technical Components
 1. **Structured Named Entity Recognition (LLM):** Uses structured outputs (JSON Schema) with modern LLMs (GPT-4o / Llama 3.3) to extract entities: `accident_severity`, `vehicle_types`, `human_factor`, and `infrastructure_factor`.
@@ -103,15 +107,12 @@ From_News_to_Action/
 │   ├── 02_preprocessing.ipynb     # Data cleaning and feature preparation
 │   ├── 03_modeling.ipynb          # Model training and comparison
 │   ├── 04_model_evaluation.ipynb  # Model testing, metrics, validation, error analysis
-│   └── 05_experiments.ipynb       # Optional: A/B testing/business experiments/advanced analysis
 ├── src/                           # Reusable functions
 ├── agents/                        # Tools, prompts, agent loop, guardrails
 ├── evaluation/                    # Eval sets, groundedness, error analysis
-├── models/                        # Saved models or model artifacts (optional)
 ├── reports/
 │   ├── figures/                   # Saved charts
 │   ├── results.md                 # Baseline table + key results
-│   └── experiment_results.md      # Optional: A/B test or experiment results
 └── presentation/                  # The slide deck
 ```
 
