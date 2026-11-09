@@ -44,35 +44,35 @@
 
 להלן ארכיטקטורת המערכת המחולקת ל-4 שכבות עיקריות:
 
-```mermaid
+``
 flowchart TD
-    subgraph BASELINE ["BASELINE"]
-        BL1["Baseline Rules & Initial Heuristics"] --> BL2["Baseline Extraction & Comparison"]
+    subgraph L1 ["LAYER 1: AUTOMATED INGESTION (Every Day 04:00 AM)"]
+        A1["7 Sources: Telegram Channels & News RSS Feeds"] --> A2["GitHub Actions Scheduling Job"]
+        A2 --> A3["Python Scraper (Filtered for Yesterday's Data)"]
     end
 
-    subgraph L1 ["LAYER 1: DATA INGESTION"]
-        A1["Sources: Hamal / Telegram / ynet / Ihud Hazala / Zaka / Fire and Rescue Services"] --> A2["Python Ingestion Script"]
+    subgraph L2 ["LAYER 2: BASELINE INGESTION & DATA-CENTRIC PIVOT"]
+        A3 --> B1["Raw Text Stream (accident_reports_raw.csv)"]
+        B1 --> B2["Deterministic Baseline Engine (Pydantic Schema)"]
+        B2 --> B3["Initial Entity Extraction: Involved Vehicles & Demographics (VRU)"]
     end
 
-    subgraph L2 ["LAYER 2: LLM EXTRACTION & STRUCTURING (DCAI Engine)"]
-        B1["Raw Text Stream"] --> B2["LLM: GPT-4o-mini / Llama 3.3 + Pydantic JSON Schema"]
-        B2 --> B3["Structured Extraction: severity, vehicle_types, human/infra factors"]
+    subgraph L3 ["LAYER 3: MULTI-AGENT AI CORE (LangGraph Framework)"]
+        B3 --> C1["Router / Node Decision Loop"]
+        C1 --> C2["Agent A: The Spatial Resolver Agent<br>(Cleans Hebrew Texts + Google Maps Geocoding API)"]
+        C1 --> C3["Agent B: The Context Enricher Agent<br>(Cross-Source Scraping of Late Depth Articles)"]
+        C2 & C3 --> C4["Spatial Density Analyzer Tool<br>(ST_DWithin: Radius 500m / 90 Days Window)"]
     end
 
-    subgraph L3 ["LAYER 3: AGENTIC AI CORE, GEOCODING & CONFLICT RESOLUTION"]
-        C1["Verbal Location"] --> C2["OpenStreetMap API Tool (Lat, Lon Conversion)"]
-        C2 --> C3["Spatial Deduplication Engine: Radius 500m + Time Window 1h"]
-        C3 --> C4["Agent Reasoning & Guardrails Engine"]
-    end
-
-    subgraph L4 ["LAYER 4: STORAGE & INSIGHTS"]
-        D1["PostgreSQL + PostGIS Database"] --> D2["Streamlit / PowerBI Live Risk Heatmap Dashboard"]
+    subgraph L4 ["LAYER 4: CLOUD STORAGE & REAL-TIME INSIGHTS"]
+        C4 --> D1["Hosted PostgreSQL + PostGIS Cloud Database (Neon.tech)"]
+        D1 --> D2["Streamlit Community Cloud Live Dashboard (24/7 Active URL)"]
     end
 
     L1 --> L2
-    BASELINE --> L2
     L2 --> L3
     L3 --> L4
+
   ```
     
 
