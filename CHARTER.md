@@ -45,6 +45,7 @@
 להלן ארכיטקטורת המערכת המחולקת ל-4 שכבות עיקריות:
 
 mermaid
+
 flowchart TD
     subgraph L1 ["LAYER 1: AUTOMATED INGESTION (Every Day 04:00 AM)"]
         A1["7 Sources: Telegram Channels & News RSS Feeds"] --> A2["GitHub Actions Scheduling Job"]
