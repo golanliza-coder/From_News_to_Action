@@ -46,35 +46,35 @@
 
 ### הקוד המלא והמתוקן להעתקה ישירה:
 
-```markdown
 ```mermaid
 flowchart TD
- subgraph L1 ["LAYER 1: AUTOMATED INGESTION (Every Day 04:00 AM)"]
-     A1["7 Sources: Telegram Channels & News RSS Feeds"] --> A2["GitHub Actions Scheduling Job"]
-     A2 --> A3["Python Scraper (Filtered for Yesterday's Data)"]
- end
+    subgraph L1 ["LAYER 1: AUTOMATED INGESTION (Every Day 04:00 AM)"]
+        A1["7 Sources: Telegram Channels & News RSS Feeds"] --> A2["GitHub Actions Scheduling Job"]
+        A2 --> A3["Python Scraper (Filtered for Yesterday's Data)"]
+    end
 
- subgraph L2 ["LAYER 2: BASELINE INGESTION & DATA-CENTRIC PIVOT"]
-     A3 --> B1["Raw Text Stream (accident_reports_raw.csv)"]
-     B1 --> B2["Deterministic Baseline Engine (Pydantic Schema)"]
-     B2 --> B3["Initial Entity Extraction: Involved Vehicles & Demographics (VRU)"]
- end
+    subgraph L2 ["LAYER 2: BASELINE INGESTION & DATA-CENTRIC PIVOT"]
+        A3 --> B1["Raw Text Stream (accident_reports_raw.csv)"]
+        B1 --> B2["Deterministic Baseline Engine (Pydantic Schema)"]
+        B2 --> B3["Initial Entity Extraction: Involved Vehicles & Demographics (VRU)"]
+    end
 
- subgraph L3 ["LAYER 3: MULTI-AGENT AI CORE (LangGraph Framework)"]
-     B3 --> C1["Router / Node Decision Loop"]
-     C1 --> C2["Agent A: The Spatial Resolver Agent<br>(Cleans Hebrew Texts + Google Maps Geocoding API)"]
-     C1 --> C3["Agent B: The Context Enricher Agent<br>(Cross-Source Scraping of Late Depth Articles)"]
-     C2 & C3 --> C4["Spatial Density Analyzer Tool<br>(ST_DWithin: Radius 500m / 90 Days Window)"]
- end
+    subgraph L3 ["LAYER 3: MULTI-AGENT AI CORE (LangGraph Framework)"]
+        B3 --> C1["Router / Node Decision Loop"]
+        C1 --> C2["Agent A: The Spatial Resolver Agent <br> (Cleans Hebrew Texts + Google Maps Geocoding API)"]
+        C1 --> C3["Agent B: The Context Enricher Agent <br> (Cross-Source Scraping of Late Depth Articles)"]
+        C2 & C3 --> C4["Spatial Density Analyzer Tool <br> (ST_DWithin: Radius 500m / 90 Days Window)"]
+    end
 
- subgraph L4 ["LAYER 4: CLOUD STORAGE & REAL-TIME INSIGHTS"]
-     C4 --> D1["Hosted PostgreSQL + PostGIS Cloud Database (Neon.tech)"]
-     D1 --> D2["Streamlit Community Cloud Live Dashboard (24/7 Active URL)"]
- end
+    subgraph L4 ["LAYER 4: CLOUD STORAGE & REAL-TIME INSIGHTS"]
+        C4 --> D1["Hosted PostgreSQL + PostGIS Cloud Database (Neon.tech)"]
+        D1 --> D2["Streamlit Community Cloud Live Dashboard (24/7 Active URL)"]
+    end
 
- L1 --> L2
- L2 --> L3
- L3 --> L4
+    %% חיבור נכון בין רכיבי הקצה שמקשר בין השכבות
+    A3 --> B1
+    B3 --> C1
+    C4 --> D1
 ```
 
 
