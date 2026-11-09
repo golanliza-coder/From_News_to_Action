@@ -22,13 +22,6 @@
 
 <img width="946" height="562" alt="image" src="https://github.com/user-attachments/assets/abf0fb02-66d8-480a-ae63-903c2b7cc06b" />
 
-
-
-
-
-
-
-
 ---
 
 ### 3. דאטה + תוכנית ב' (Data Sources & Fallback) 
