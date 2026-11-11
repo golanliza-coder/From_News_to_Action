@@ -106,12 +106,12 @@ def enrich_and_upload(raw_records: List[dict]):
             lat, lon = None, None
             loc = data.get("verbal_location", "")
             if loc and "not specified" not in loc.lower():
-                geo = gmaps_client.geocode(f"{loc}, ישראל")
+                geo = gmaps_client.geocode(f"{loc}, ישראל")                  
                 if geo and isinstance(geo, list) and len(geo) > 0:
                     first_res = geo[0]  # <--- כאן הוספתי [0] כדי לשלוף את האיבר הראשון ברשימה!
                     lat = float(first_res["geometry"]["location"]["lat"])
                     lon = float(first_res["geometry"]["location"]["lng"])
-            
+           
             data.update({
                 "source": rec["source"],
                 "raw_text": rec["raw_text"],
