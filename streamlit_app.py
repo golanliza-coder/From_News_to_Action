@@ -269,9 +269,8 @@ try:
     # 1. הגדרת פריסת עמודות ראשית: עמודת תוכן רחבה משמאל [4] ועמודת סרגל צרה מימין [1]
     sidebar_right_col, main_content_col = st.columns([1, 4], gap="large")
 
-
-    # ------------------ סרגל סינון אינטראקטיבי בצד ימין ------------------
-    with sidebar_right_col:
+    # ------------------ סרגל סינון אינטראקטיבי ------------------
+    with sidebar_right_col: # או בכל מקום שבו הגדרת את רכיבי ה-st שלך
         st.markdown("### 🔍 סרגל סינון נתונים")
         
         # א. מסנן טווח תאריכים
@@ -287,9 +286,12 @@ try:
         all_sources = sorted(df_all['source'].unique())
         selected_sources = st.multiselect("ערוץ מקור", all_sources, default=all_sources)
         
-        # ד. מסנן מוקדי אנומליה בלבד
-        only_anomalies = st.checkbox("הצג מוקדי אנומליה בלבד (+3)", value=False)
-
+        # --- הוספת מסנן מדד הרמזור החדש ---
+        traffic_light_option = st.selectbox(
+            "סינון לפי מדד רמזור",
+            ["הכל", "🔴 אדום - אנומליה מרחבית (+3)", "🟠 כתום - אזהרה (2)", "🟢 ירוק - תקין / בודד (1)"]
+        )
+   
     # ------------------ לוגיקת סינון הדאטה ------------------
     if isinstance(date_range, (list, tuple)) and len(date_range) == 2:
         start_date, end_date = pd.to_datetime(date_range), pd.to_datetime(date_range)
