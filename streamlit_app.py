@@ -47,6 +47,23 @@ div[data-baseweb="tag"] svg {
     background-color: #F4F9FF; padding: 14px; border-radius: 10px;
     border: 1.5px solid #90CAF9; box-shadow: 0 2px 4px rgba(0,0,0,0.06); text-align: center;
     min-height: 115px; display: flex; flex-direction: column; justify-content: center;
+
+/* הסתרת אזור ה-sidebar המובנה הריק של סטרימליט בצד שמאל */
+[data-testid="stSidebar"] {
+    display: none !important;
+}
+
+/* הסתרת כפתור החץ (הלולאה/פתיחה) של ה-sidebar המקורי */
+[data-testid="stSidebarCollapsedControl"] {
+    display: none !important;
+}
+
+/* הרחבת התוכן המרכזי שיתפוס את כל רוחב המסך שהתפנה */
+.stMainBlockContainer {
+    max-width: 100% !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+}
 }
 </style>
 """,
