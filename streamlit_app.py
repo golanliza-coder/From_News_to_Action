@@ -298,13 +298,13 @@ try:
     anomaly_orange = len(df_filtered[df_filtered['cluster_count'] == 2])
     anomaly_green = len(df_filtered[df_filtered['cluster_count'] == 1])
 
-    # ------------------ תוכן הדשבורד המרכזי בצד שמאל ------------------
+        # ------------------ תוכן הדשבורד המרכזי בצד שמאל ------------------
     with main_content_col:
         st.markdown("<h1 style='text-align: right;'>🚨 From News To Action</h1>", unsafe_allow_html=True)
         st.markdown("<h3 style='text-align: right;'>מערכת אג'נטית לניתוח והשלמת נתוני תאונות דרכים עבור הנהלת הרלב\"ד</h3>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # תצוגת חמשת כרטיסיות ה-KPI העליונות בשורה אחת (מימין לשמאל)
+        # תצוגת חמשת כרטיסיות ה-KPI העליונות בשורה אחת
         kpi_cols = st.columns(5)
         
         with kpi_cols[4]: # סה"כ אירועים יופיע בימין הקיצוני
