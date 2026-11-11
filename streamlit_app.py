@@ -47,6 +47,7 @@ div[data-baseweb="tag"] svg {
     background-color: #F4F9FF; padding: 14px; border-radius: 10px;
     border: 1.5px solid #90CAF9; box-shadow: 0 2px 4px rgba(0,0,0,0.06); text-align: center;
     min-height: 115px; display: flex; flex-direction: column; justify-content: center;
+}
 
 /* הסתרת אזור ה-sidebar המובנה הריק של סטרימליט בצד שמאל */
 [data-testid="stSidebar"] {
@@ -63,7 +64,6 @@ div[data-baseweb="tag"] svg {
     max-width: 100% !important;
     padding-left: 2rem !important;
     padding-right: 2rem !important;
-}
 }
 </style>
 """,
@@ -112,7 +112,6 @@ two_wheel_keys = (
     "קטנוע",
 )
 
-
 def classify_vuln(raw_v, v_list):
     cats = set()
     t = str(raw_v).lower() if raw_v else ""
@@ -157,7 +156,6 @@ def classify_vuln(raw_v, v_list):
         if any(w in vs for w in two_wheel_keys):
             cats.add("רוכבי דו-גלגלי / מיקרו-מוביליטי")
     return list(cats)
-
 
 def compute_spatial_anomaly(df):
     df["cluster_count"], df["suspected__hazard"] = 1, False
@@ -261,16 +259,15 @@ def load_data():
         pd.DataFrame(rows).drop_duplicates(subset=["id"])
     )
 
-
 try:
     df_all = load_data()
     active_f = st.query_params.get("f", "ALL")
 
-    # 1. הגדרת פריסת עמודות ראשית: עמודת תוכן רחבה משמאל [4] ועמודת סרגל צרה מימין [1]
-    sidebar_right_col, main_content_col = st.columns([1, 4], gap="large")
+    # 1. הגדרה נכונה: עמודת תוכן רחבה משמאל [4] ועמודת סרגל צרה מימין [1]
+    main_content_col, sidebar_right_col = st.columns([4, 1], gap="large")
 
-    # ------------------ סרגל סינון אינטראקטיבי ------------------
-    with sidebar_right_col: # או בכל מקום שבו הגדרת את רכיבי ה-st שלך
+    # ------------------ סרגל סינון אינטראקטיבי בצד ימין ------------------
+    with sidebar_right_col:
         st.markdown("### 🔍 סרגל סינון נתונים")
         
         # א. מסנן טווח תאריכים
@@ -286,13 +283,13 @@ try:
         all_sources = sorted(df_all['source'].unique())
         selected_sources = st.multiselect("ערוץ מקור", all_sources, default=all_sources)
         
-        # --- הוספת מסנן מדד הרמזור החדש ---
+        # ד. מסנן מדד הרמזור החדש
         traffic_light_option = st.selectbox(
             "סינון לפי מדד רמזור",
             ["הכל", "🔴 אדום - אנומליה מרחבית (+3)", "🟠 כתום - אזהרה (2)", "🟢 ירוק - תקין / בודד (1)"]
         )
-   
-        # ------------------ לוגיקת סינון הדאטה ------------------
+
+    # ------------------ לוגיקת סינון הדאטה ------------------
     if isinstance(date_range, (list, tuple)) and len(date_range) == 2:
         start_date, end_date = pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])
         df_filtered = df_all[(df_all['pub_date'] >= start_date) & (df_all['pub_date'] <= end_date)]
@@ -309,9 +306,6 @@ try:
         df_filtered = df_filtered[df_filtered['cluster_count'] == 2]
     elif traffic_light_option == "🟢 ירוק - תקין / בודד (1)":
         df_filtered = df_filtered[df_filtered['cluster_count'] == 1]
-    
-    if only_anomalies:
-        df_filtered = df_filtered[df_filtered['suspected__hazard'] == True]
 
     # חישוב נתונים לכרטיסיות
     total_events = len(df_filtered)
@@ -325,7 +319,7 @@ try:
     anomaly_orange = len(df_filtered[df_filtered['cluster_count'] == 2])
     anomaly_green = len(df_filtered[df_filtered['cluster_count'] == 1])
 
-        # ------------------ תוכן הדשבורד המרכזי בצד שמאל ------------------
+    # ------------------ תוכן הדשבורד המרכזי בצד שמאל ------------------
     with main_content_col:
         st.markdown("<h1 style='text-align: right;'>🚨 From News To Action</h1>", unsafe_allow_html=True)
         st.markdown("<h3 style='text-align: right;'>מערכת אג'נטית לניתוח והשלמת נתוני תאונות דרכים עבור הנהלת הרלב\"ד</h3>", unsafe_allow_html=True)
@@ -360,10 +354,7 @@ try:
 
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<h4 style='text-align: right;'>פריסת אירועים ומוקדי אנומליה במרחב ישראל 🗺️</h4>", unsafe_allow_html=True)
-        
-        # 🔔 חשוב מאוד: כאן עליך להדביק את קוד המפה (st.pydeck_chart) 
-        # וקוד הגרפים (st.plotly_chart) המקוריים שלך! 
-        # כל עוד הם יישארו בתוך הבלוק המוזח (Indented) הזה, הם יוצגו בצד שמאל והסרגל יישאר בימין.
 
 except Exception as e:
     st.error(f"שגיאה בטעינת הדשבורד: {e}")
+
