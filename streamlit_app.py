@@ -292,15 +292,23 @@ try:
             ["הכל", "🔴 אדום - אנומליה מרחבית (+3)", "🟠 כתום - אזהרה (2)", "🟢 ירוק - תקין / בודד (1)"]
         )
    
-    # ------------------ לוגיקת סינון הדאטה ------------------
+        # ------------------ לוגיקת סינון הדאטה ------------------
     if isinstance(date_range, (list, tuple)) and len(date_range) == 2:
-        start_date, end_date = pd.to_datetime(date_range), pd.to_datetime(date_range)
+        start_date, end_date = pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])
         df_filtered = df_all[(df_all['pub_date'] >= start_date) & (df_all['pub_date'] <= end_date)]
     else:
         df_filtered = df_all.copy()
         
     df_filtered = df_filtered[df_filtered['sev'].isin(selected_sevs)]
     df_filtered = df_filtered[df_filtered['source'].isin(selected_sources)]
+    
+    # סינון הנתונים על פי הבחירה במדד הרמזור החדש
+    if traffic_light_option == "🔴 אדום - אנומליה מרחבית (+3)":
+        df_filtered = df_filtered[df_filtered['cluster_count'] >= 3]
+    elif traffic_light_option == "🟠 כתום - אזהרה (2)":
+        df_filtered = df_filtered[df_filtered['cluster_count'] == 2]
+    elif traffic_light_option == "🟢 ירוק - תקין / בודד (1)":
+        df_filtered = df_filtered[df_filtered['cluster_count'] == 1]
     
     if only_anomalies:
         df_filtered = df_filtered[df_filtered['suspected__hazard'] == True]
