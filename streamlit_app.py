@@ -249,8 +249,53 @@ try:
     df_all = load_data()
     active_f = st.query_params.get("f", "ALL")
 
-    # 1. יצירת פריסת שתי עמודות ראשיות: תוכן משמאל (4) וסרגל סינון מימין (1)
+    # 1. הגדרת פריסת עמודות ראשית: עמודת תוכן רחבה משמאל [4] ועמודת סרגל צרה מימין [1]
     main_content_col, sidebar_right_col = st.columns([4, 1], gap="large")
+
+    # ------------------ סרגל סינון אינטראקטיבי בצד ימין ------------------
+    with sidebar_right_col:
+        st.markdown("### 🔍 סרגל סינון נתונים")
+        
+        # א. מסנן טווח תאריכים
+        min_d = df_all['pub_date'].min().date()
+        max_d = df_all['pub_date'].max().date()
+        date_range = st.date_input("טווח תאריכים", [min_d, max_d], min_value=min_d, max_value=max_d)
+        
+        # ב. מסנן רמת חומרה
+        all_sevs = sorted(df_all['sev'].unique())
+        selected_sevs = st.multiselect("רמת חומרה", all_sevs, default=all_sevs)
+        
+        # ג. מסנן ערוץ מקור
+        all_sources = sorted(df_all['source'].unique())
+        selected_sources = st.multiselect("ערוץ מקור", all_sources, default=all_sources)
+        
+        # ד. מסנן מוקדי אנומליה בלבד
+        only_anomalies = st.checkbox("הצג מוקדי אנומליה בלבד (+3)", value=False)
+
+    # ------------------ לוגיקת סינון הדאטה ------------------
+    if isinstance(date_range, (list, tuple)) and len(date_range) == 2:
+        start_date, end_date = pd.to_datetime(date_range), pd.to_datetime(date_range)
+        df_filtered = df_all[(df_all['pub_date'] >= start_date) & (df_all['pub_date'] <= end_date)]
+    else:
+        df_filtered = df_all.copy()
+        
+    df_filtered = df_filtered[df_filtered['sev'].isin(selected_sevs)]
+    df_filtered = df_filtered[df_filtered['source'].isin(selected_sources)]
+    
+    if only_anomalies:
+        df_filtered = df_filtered[df_filtered['suspected__hazard'] == True]
+
+    # חישוב נתונים לכרטיסיות
+    total_events = len(df_filtered)
+    total_sources = df_filtered['source'].nunique()
+    fatal_severe = len(df_filtered[df_filtered['sev'].isin(['קטלנית', 'קשה / קטלנית', 'קשה'])])
+    two_wheel_count = len(df_filtered[df_filtered['has_2w'] == True])
+    vulnerable_pct = int((len(df_filtered[df_filtered['has_vru'] == True]) / total_events * 100)) if total_events > 0 else 0
+    vulnerable_count = len(df_filtered[df_filtered['has_vru'] == True])
+    
+    anomaly_red = len(df_filtered[df_filtered['cluster_count'] >= 3])
+    anomaly_orange = len(df_filtered[df_filtered['cluster_count'] == 2])
+    anomaly_green = len(df_filtered[df_filtered['cluster_count'] == 1])
 
     # ------------------ תוכן הדשבורד המרכזי בצד שמאל ------------------
     with main_content_col:
@@ -261,15 +306,15 @@ try:
         # תצוגת חמשת כרטיסיות ה-KPI העליונות בשורה אחת (מימין לשמאל)
         kpi_cols = st.columns(5)
         
-        with kpi_cols[4]: # כרטיסייה 1 מימין
+        with kpi_cols[4]: # סה"כ אירועים יופיע בימין הקיצוני
             st.markdown(f"<div class='kpi-card'><span style='color: #0D47A1; font-size: 14px; font-weight: bold;'>סה\"כ אירועים</span><h2 style='margin: 5px 0; color: #0D47A1;'>{total_events}</h2></div>", unsafe_allow_html=True)
-        with kpi_cols[3]: # כרטיסייה 2 מימין
+        with kpi_cols[3]:
             st.markdown(f"<div class='kpi-card'><span style='color: #4A148C; font-size: 14px; font-weight: bold;'>מקורות מידע</span><h2 style='margin: 5px 0; color: #4A148C;'>{total_sources}</h2></div>", unsafe_allow_html=True)
-        with kpi_cols[2]: # כרטיסייה 3 מימין
+        with kpi_cols[2]:
             st.markdown(f"<div class='kpi-card'><span style='color: #1565C0; font-size: 14px; font-weight: bold;'>אוכלוסיות סיכון</span><h2 style='margin: 5px 0; color: #1565C0;'>{vulnerable_pct}%</h2><span style='font-size: 12px; color: #555;'>({vulnerable_count})</span></div>", unsafe_allow_html=True)
-        with kpi_cols[1]: # כרטיסייה 4 מימין
+        with kpi_cols[1]:
             st.markdown(f"<div class='kpi-card'><span style='color: #006064; font-size: 14px; font-weight: bold;'>מעורבות דו-גלגלי</span><h2 style='margin: 5px 0; color: #006064;'>{int(two_wheel_count/total_events*100) if total_events > 0 else 0}%</h2><span style='font-size: 12px; color: #555;'>({two_wheel_count})</span></div>", unsafe_allow_html=True)
-        with kpi_cols[0]: # כרטיסייה 5 מימין
+        with kpi_cols[0]: # קטלניות / קשות בשמאל הקיצוני
             st.markdown(f"<div class='kpi-card'><span style='color: #B71C1C; font-size: 14px; font-weight: bold;'>קטלניות / קשות</span><h2 style='margin: 5px 0; color: #B71C1C;'>{fatal_severe}</h2></div>", unsafe_allow_html=True)
             
         st.markdown("<br>", unsafe_allow_html=True)
@@ -278,14 +323,19 @@ try:
         # תצוגת כרטיסיות מדד הרמזור (אנומליות - מימין לשמאל)
         traffic_light_cols = st.columns(3)
         
-        with traffic_light_cols[2]: # אדום מימין
+        with traffic_light_cols[2]: # אדום בימין
             st.markdown(f"<div class='meta-card' style='border-top: 5px solid #D32F2F;'><span style='color: #D32F2F; font-weight: bold;'>אנומליה מרחבית (+3) 🔴</span><h2 style='margin: 5px 0;'>{anomaly_red}</h2><span style='font-size: 11px; color: #777;'>suspected_hazard = True</span></div>", unsafe_allow_html=True)
         with traffic_light_cols[1]: # כתום באמצע
             st.markdown(f"<div class='meta-card' style='border-top: 5px solid #F57C00;'><span style='color: #F57C00; font-weight: bold;'>רמת אזהרה (2) 🟠</span><h2 style='margin: 5px 0;'>{anomaly_orange}</h2><span style='font-size: 11px; color: #777;'>תאונות ברדיוס 500 מ'</span></div>", unsafe_allow_html=True)
-        with traffic_light_cols[0]: # ירוק משמאל
+        with traffic_light_cols[0]: # ירוק בשמאל
             st.markdown(f"<div class='meta-card' style='border-top: 5px solid #2E7D32;'><span style='color: #2E7D32; font-weight: bold;'>תקין / בודד (1) 🟢</span><h2 style='margin: 5px 0;'>{anomaly_green}</h2><span style='font-size: 11px; color: #777;'>אירוע יחיד במרחב</span></div>", unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<h4 style='text-align: right;'>פריסת אירועים ומוקדי אנומליה במרחב ישראל 🗺️</h4>", unsafe_allow_html=True)
+        
+        # 🔔 חשוב מאוד: כאן עליך להדביק את קוד המפה (st.pydeck_chart) 
+        # וקוד הגרפים (st.plotly_chart) המקוריים שלך! 
+        # כל עוד הם יישארו בתוך הבלוק המוזח (Indented) הזה, הם יוצגו בצד שמאל והסרגל יישאר בימין.
 
 except Exception as e:
     st.error(f"שגיאה בטעינת הדשבורד: {e}")
-
-
