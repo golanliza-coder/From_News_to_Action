@@ -250,7 +250,8 @@ try:
     active_f = st.query_params.get("f", "ALL")
 
     # 1. הגדרת פריסת עמודות ראשית: עמודת תוכן רחבה משמאל [4] ועמודת סרגל צרה מימין [1]
-    main_content_col, sidebar_right_col = st.columns([4, 1], gap="large")
+    sidebar_right_col, main_content_col = st.columns([1, 4], gap="large")
+
 
     # ------------------ סרגל סינון אינטראקטיבי בצד ימין ------------------
     with sidebar_right_col:
