@@ -263,27 +263,24 @@ try:
     df_all = load_data()
     active_f = st.query_params.get("f", "ALL")
 
-    # 1. הגדרה נכונה: עמודת תוכן רחבה משמאל [4] ועמודת סרגל צרה מימין [1]
+    # 1. חלוקת המסך: עמודת תוכן רחבה משמאל (4) ועמודת סרגל צרה מימין (1)
     main_content_col, sidebar_right_col = st.columns([4, 1], gap="large")
 
     # ------------------ סרגל סינון אינטראקטיבי בצד ימין ------------------
     with sidebar_right_col:
         st.markdown("### 🔍 סרגל סינון נתונים")
         
-        # א. מסנן טווח תאריכים
         min_d = df_all['pub_date'].min().date()
         max_d = df_all['pub_date'].max().date()
         date_range = st.date_input("טווח תאריכים", [min_d, max_d], min_value=min_d, max_value=max_d)
         
-        # ב. מסנן רמת חומרה
         all_sevs = sorted(df_all['sev'].unique())
         selected_sevs = st.multiselect("רמת חומרה", all_sevs, default=all_sevs)
         
-        # ג. מסנן ערוץ מקור
         all_sources = sorted(df_all['source'].unique())
         selected_sources = st.multiselect("ערוץ מקור", all_sources, default=all_sources)
         
-        # ד. מסנן מדד הרמזור החדש
+        # מסנן מדד הרמזור החדש
         traffic_light_option = st.selectbox(
             "סינון לפי מדד רמזור",
             ["הכל", "🔴 אדום - אנומליה מרחבית (+3)", "🟠 כתום - אזהרה (2)", "🟢 ירוק - תקין / בודד (1)"]
@@ -299,7 +296,6 @@ try:
     df_filtered = df_filtered[df_filtered['sev'].isin(selected_sevs)]
     df_filtered = df_filtered[df_filtered['source'].isin(selected_sources)]
     
-    # סינון הנתונים על פי הבחירה במדד הרמזור החדש
     if traffic_light_option == "🔴 אדום - אנומליה מרחבית (+3)":
         df_filtered = df_filtered[df_filtered['cluster_count'] >= 3]
     elif traffic_light_option == "🟠 כתום - אזהרה (2)":
@@ -325,10 +321,10 @@ try:
         st.markdown("<h3 style='text-align: right;'>מערכת אג'נטית לניתוח והשלמת נתוני תאונות דרכים עבור הנהלת הרלב\"ד</h3>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # תצוגת חמשת כרטיסיות ה-KPI העליונות בשורה אחת
+        # תצוגת חמשת כרטיסיות ה-KPI העליונות (מימין לשמאל)
         kpi_cols = st.columns(5)
         
-        with kpi_cols[4]: # סה"כ אירועים יופיע בימין הקיצוני
+        with kpi_cols[4]:
             st.markdown(f"<div class='kpi-card'><span style='color: #0D47A1; font-size: 14px; font-weight: bold;'>סה\"כ אירועים</span><h2 style='margin: 5px 0; color: #0D47A1;'>{total_events}</h2></div>", unsafe_allow_html=True)
         with kpi_cols[3]:
             st.markdown(f"<div class='kpi-card'><span style='color: #4A148C; font-size: 14px; font-weight: bold;'>מקורות מידע</span><h2 style='margin: 5px 0; color: #4A148C;'>{total_sources}</h2></div>", unsafe_allow_html=True)
@@ -336,20 +332,20 @@ try:
             st.markdown(f"<div class='kpi-card'><span style='color: #1565C0; font-size: 14px; font-weight: bold;'>אוכלוסיות סיכון</span><h2 style='margin: 5px 0; color: #1565C0;'>{vulnerable_pct}%</h2><span style='font-size: 12px; color: #555;'>({vulnerable_count})</span></div>", unsafe_allow_html=True)
         with kpi_cols[1]:
             st.markdown(f"<div class='kpi-card'><span style='color: #006064; font-size: 14px; font-weight: bold;'>מעורבות דו-גלגלי</span><h2 style='margin: 5px 0; color: #006064;'>{int(two_wheel_count/total_events*100) if total_events > 0 else 0}%</h2><span style='font-size: 12px; color: #555;'>({two_wheel_count})</span></div>", unsafe_allow_html=True)
-        with kpi_cols[0]: # קטלניות / קשות בשמאל הקיצוני
+        with kpi_cols[0]:
             st.markdown(f"<div class='kpi-card'><span style='color: #B71C1C; font-size: 14px; font-weight: bold;'>קטלניות / קשות</span><h2 style='margin: 5px 0; color: #B71C1C;'>{fatal_severe}</h2></div>", unsafe_allow_html=True)
             
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<h4 style='text-align: right;'>מדד רמזור: התרעות אנומליה מרחבית (רדיוס 500 מ' / 90 יום) ⏳</h4>", unsafe_allow_html=True)
         
-        # תצוגת כרטיסיות מדד הרמזור (אנומליות - מימין לשמאל)
+        # תצוגת כרטיסיות מדד הרמזור (מימין לשמאל)
         traffic_light_cols = st.columns(3)
         
-        with traffic_light_cols[2]: # אדום בימין
+        with traffic_light_cols[2]:
             st.markdown(f"<div class='meta-card' style='border-top: 5px solid #D32F2F;'><span style='color: #D32F2F; font-weight: bold;'>אנומליה מרחבית (+3) 🔴</span><h2 style='margin: 5px 0;'>{anomaly_red}</h2><span style='font-size: 11px; color: #777;'>suspected_hazard = True</span></div>", unsafe_allow_html=True)
-        with traffic_light_cols[1]: # כתום באמצע
+        with traffic_light_cols[1]:
             st.markdown(f"<div class='meta-card' style='border-top: 5px solid #F57C00;'><span style='color: #F57C00; font-weight: bold;'>רמת אזהרה (2) 🟠</span><h2 style='margin: 5px 0;'>{anomaly_orange}</h2><span style='font-size: 11px; color: #777;'>תאונות ברדיוס 500 מ'</span></div>", unsafe_allow_html=True)
-        with traffic_light_cols[0]: # ירוק בשמאל
+        with traffic_light_cols[0]:
             st.markdown(f"<div class='meta-card' style='border-top: 5px solid #2E7D32;'><span style='color: #2E7D32; font-weight: bold;'>תקין / בודד (1) 🟢</span><h2 style='margin: 5px 0;'>{anomaly_green}</h2><span style='font-size: 11px; color: #777;'>אירוע יחיד במרחב</span></div>", unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
@@ -357,4 +353,5 @@ try:
 
 except Exception as e:
     st.error(f"שגיאה בטעינת הדשבורד: {e}")
+
 
