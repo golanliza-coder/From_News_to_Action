@@ -280,11 +280,20 @@ try:
         all_sources = sorted(df_all['source'].unique())
         selected_sources = st.multiselect("ערוץ מקור", all_sources, default=all_sources)
         
-        # מסנן מדד הרמזור החדש
-        traffic_light_option = st.selectbox(
-            "סינון לפי מדד רמזור",
-            ["הכל", "🔴 אדום - אנומליה מרחבית (+3)", "🟠 כתום - אזהרה (2)", "🟢 ירוק - תקין / בודד (1)"]
+        # מסנן מדד הרמזור החדש (בחירה מרובה)
+        traffic_light_options = [
+            "🔴 אדום - אנומליה מרחבית (+3)",
+            "🟠 כתום - אזהרה (2)",
+            "🟢 ירוק - תקין / בודד (1)"
+        ]
+        selected_traffic_lights = st.multiselect(
+            "מדד רמזור",
+            traffic_light_options,
+            default=traffic_light_options
         )
+        
+        # תיבת הסימון הקיימת בתחתית הסרגל
+        only_red_anomalies = st.checkbox("הצג מוקדי אנומליה אדומים בלבד (+3)", value=False)
 
     # ------------------ לוגיקת סינון הדאטה ------------------
     if isinstance(date_range, (list, tuple)) and len(date_range) == 2:
@@ -296,13 +305,20 @@ try:
     df_filtered = df_filtered[df_filtered['sev'].isin(selected_sevs)]
     df_filtered = df_filtered[df_filtered['source'].isin(selected_sources)]
     
-    if traffic_light_option == "🔴 אדום - אנומליה מרחבית (+3)":
+    # סינון לפי מדד הרמזור שנבחר ב-multiselect
+    tl_mask = pd.Series(False, index=df_filtered.index)
+    if "🔴 אדום - אנומליה מרחבית (+3)" in selected_traffic_lights:
+        tl_mask |= (df_filtered['cluster_count'] >= 3)
+    if "🟠 כתום - אזהרה (2)" in selected_traffic_lights:
+        tl_mask |= (df_filtered['cluster_count'] == 2)
+    if "🟢 ירוק - תקין / בודד (1)" in selected_traffic_lights:
+        tl_mask |= (df_filtered['cluster_count'] == 1)
+    df_filtered = df_filtered[tl_mask]
+    
+    # החלת תיבת הסימון התחתונה (אם סומנה)
+    if only_red_anomalies:
         df_filtered = df_filtered[df_filtered['cluster_count'] >= 3]
-    elif traffic_light_option == "🟠 כתום - אזהרה (2)":
-        df_filtered = df_filtered[df_filtered['cluster_count'] == 2]
-    elif traffic_light_option == "🟢 ירוק - תקין / בודד (1)":
-        df_filtered = df_filtered[df_filtered['cluster_count'] == 1]
-
+    
     # חישוב נתונים לכרטיסיות
     total_events = len(df_filtered)
     total_sources = df_filtered['source'].nunique()
