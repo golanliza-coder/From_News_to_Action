@@ -1,178 +1,411 @@
 
 # Data Dictionary
 
-This document provides a detailed overview of the datasets tracking global health security, demographic trends, health indicators, and technology adoption.
+This document provides detailed information about road accident/s and its statistic in Israel. It outlines the structure, field names, data types, inferred descriptions, and sample values across multiple tables tracking monthly time-series metrics, accident severities, road types, temporal distributions, collision classifications, pedestrian involvement, and locality statistics.
 
 ---
 
-## 1. 2021-GHS-Index-April-2022.csv
+## 1. `t01_01.xlsx`
 
-**Description:** This dataset tracks the Global Health Security (GHS) Index scores and hundreds of specific underlying indicators for countries to measure their capacity to prevent, detect, and respond to health emergencies.,
+The table contains annual road accident statistics in Israel spanning a 10-year period from 2016 to 2025. It categorizes total road accidents across three dimensions: calendar month (`January`–`December`), type of collision or incident (e.g., `Hitting a pedestrian`, `Front to side`, `Head-on`), and time of day (`Day` vs. `Night`).
 
 | Field Name | Data Type | Description | Sample Value |
 | :--- | :--- | :--- | :--- |
-| Country | String | Name of the country being assessed. | Afghanistan |
-| Year | Integer | The year the index data was recorded. | 2021 |
-| OVERALL SCORE | Float | The aggregated health security index score (0-100). | 28.8 |
-| 1) PREVENTION... | Float | Score for the Prevention of the emergence or release of pathogens. | 12 |
-| 1.1) Antimicrobial resistance (AMR) | Float | Specific score for AMR capacity and regulations. | 16.7 |
-| 2) EARLY DETECTION & REPORTING... | Float | Score for capacity in laboratory systems and real-time surveillance. | 20.6 |
-| 3) RAPID RESPONSE... | Float | Score for emergency preparedness and risk communication. | 23.3 |
-| 4) SUFFICIENT & ROBUST HEALTH SECTOR... | Float | Score for clinical capacity and healthcare workforce. | 24.5 |
-| 5) COMMITMENT TO IMPROVING... | Float | Score for international agreements and financing for preparedness. | 25 |
-| 6) OVERALL RISK ENVIRONMENT... | Float | Score for political, security, and socio-economic resilience. | 45.1 |
-| *[Hundreds of specific sub-indicators]* | Float | Granular binary or numeric scores for specific laws, rates, or capacities (e.g., 1.1.1a, 6.5.1a)., | 50 |
+| `Category / Indicator (English)`  | String | English label describing the accident breakdown dimension or category (Month, Type of accident, or Time of accident). | `Hitting a pedestrian` |
+| `2025`  | Integer | Total number of recorded road accidents for the given category in 2025. | `7717` |
+| `2024`  | Integer | Total number of recorded road accidents for the given category in 2024. | `8315` |
+| `2023`  | Integer | Total number of recorded road accidents for the given category in 2023. | `8832` |
+| `2022`  | Integer | Total number of recorded road accidents for the given category in 2022. | `10404` |
+| `2021`  | Integer | Total number of recorded road accidents for the given category in 2021. | `11554` |
+| `2020`  | Integer | Total number of recorded road accidents for the given category in 2020. | `10836` |
+| `2019`  | Integer | Total number of recorded road accidents for the given category in 2019. | `12670` |
+| `2018`  | Integer | Total number of recorded road accidents for the given category in 2018. | `12596` |
+| `2017`  | Integer | Total number of recorded road accidents for the given category in 2017. | `13628` |
+| `2016`  | Integer | Total number of recorded road accidents for the given category in 2016. | `12966` |
+| `Category / Indicator (Hebrew)`  | String | Hebrew label corresponding to the English accident breakdown dimension or category. | `פגיעה בהולך רגל` |
 
 ---
 
-## 2. country Index.csv
+## 2. `t01_02.xlsx`
 
-**Description:** This file serves as a geographic reference table, mapping location keys to country names, subregional divisions, and hierarchical aggregation levels.
+The table tracks annual road accidents in Israel categorized by road type (urban vs. non-urban, intersections vs. non-intersections) and accident severity (fatal, serious, slight) from 2016 to 2025.
 
 | Field Name | Data Type | Description | Sample Value |
 | :--- | :--- | :--- | :--- |
-| location_key | String | Unique identifier used to join with other health and demographic tables. | AF_BAL |
-| country_code | String | Two-letter ISO country code. | AF |
-| country_name | String | Full name of the country. | Afghanistan |
-| subregion1_code | String | Code for the primary sub-administrative division (e.g., state or province). | BAL |
-| subregion1_name | String | Name of the primary sub-administrative division. | Balkh |
-| subregion2_code | String | Code for the secondary sub-administrative division (e.g., county or district). | 7 |
-| subregion2_name | String | Name of the secondary sub-administrative division. | Anta |
-| aggregation_level | Integer | Hierarchical level (0 for country, 1 for subregion1, 2 for subregion2). | 1 |
+| `Road Type and Severity (English)`  | String | English label describing the road type and/or accident severity category. | `Urban road` / `Fatal` / `At intersection` |
+| `2025`  | Integer | Total number of recorded accidents for the category in 2025. | `4949` |
+| `2024`  | Integer | Total number of recorded accidents for the category in 2024. | `5447` |
+| `2023`  | Integer | Total number of recorded accidents for the category in 2023. | `5726` |
+| `2022`  | Integer | Total number of recorded accidents for the category in 2022. | `6849` |
+| `2021`  | Integer | Total number of recorded accidents for the category in 2021. | `7856` |
+| `2020`  | Integer | Total number of recorded accidents for the category in 2020. | `7582` |
+| `2019`  | Integer | Total number of recorded accidents for the category in 2019. | `8809` |
+| `2018`  | Integer | Total number of recorded accidents for the category in 2018. | `8735` |
+| `2017`  | Integer | Total number of recorded accidents for the category in 2017. | `9631` |
+| `2016`  | Integer | Total number of recorded accidents for the category in 2016. | `9230` |
+| `Road Type and Severity (Hebrew)`  | String | Hebrew label corresponding to the road type and severity category. | `דרך עירונית` / `קטלניות` / `בצומת` |
 
 ---
 
-## 3. demographics.csv
+## 3. `t01_03.xlsx`
 
-**Description:** This dataset provides detailed population statistics, including gender distribution, urban/rural splits, population density, and age-specific breakdowns for global locations.
+The table tracks road accidents in Israel by calendar month, accident severity (fatal, serious, slight), and day of the month (1st through 31st) for the year 2025.
 
 | Field Name | Data Type | Description | Sample Value |
 | :--- | :--- | :--- | :--- |
-| location_key | String | Unique identifier linking to the country index. | AE |
-| population | Integer | Total resident population for the location. | 9890400 |
-| population_male | Integer | Total male population. | 6836349 |
-| population_female | Integer | Total female population. | 3054051 |
-| population_rural | Integer | Number of people living in rural areas. | 1290785 |
-| population_urban | Integer | Number of people living in urban areas. | 8479744 |
-| population_density | Float | Number of people per square kilometer. | 118.306 |
-| human_development_index | Float | UNDP Human Development Index (HDI) score. | 0.863 |
-| population_age_00_09 | Integer | Population count for ages 0 through 9. | 1011713 |
-| population_age_80_and_older | Integer | Population count for ages 80 and above. | 12426 |
+| `Month and Severity / Indicator` (Col 1) | String | Description of the month, overall totals, or accident severity level (`All accidents`, `Fatal`, `Serious`, `Slight`, `January`, etc.). | `All accidents` / `January` / `Fatal` |
+| `Day 31` | Integer / Float | Number of accidents occurring on the 31st day of the month for the given category. | `132.0` |
+| `Day 30` | Integer / Float | Number of accidents occurring on the 30th day of the month for the given category. | `271.0` |
+| `Day 29` | Integer / Float | Number of accidents occurring on the 29th day of the month for the given category. | `209.0` |
+| `Day 28` | Integer / Float | Number of accidents occurring on the 28th day of the month for the given category. | `266.0` |
+| `Day 27` | Integer / Float | Number of accidents occurring on the 27th day of the month for the given category. | `259.0` |
+| `Day 26` | Integer / Float | Number of accidents occurring on the 26th day of the month for the given category. | `236.0` |
+| `Day 25` | Integer / Float | Number of accidents occurring on the 25th day of the month for the given category. | `239.0` |
+| `Day 24` | Integer / Float | Number of accidents occurring on the 24th day of the month for the given category. | `252.0` |
+| `Day 23` | Integer / Float | Number of accidents occurring on the 23rd day of the month for the given category. | `250.0` |
+| `Day 22` | Integer / Float | Number of accidents occurring on the 22nd day of the month for the given category. | `246.0` |
+| `Day 21` | Integer / Float | Number of accidents occurring on the 21st day of the month for the given category. | `260.0` |
+| `Day 20` | Integer / Float | Number of accidents occurring on the 20th day of the month for the given category. | `259.0` |
+| `Day 19` | Integer / Float | Number of accidents occurring on the 19th day of the month for the given category. | `248.0` |
+| `Day 18` | Integer / Float | Number of accidents occurring on the 18th day of the month for the given category. | `228.0` |
+| `Day 17` | Integer / Float | Number of accidents occurring on the 17th day of the month for the given category. | `237.0` |
+| `Day 16` | Integer / Float | Number of accidents occurring on the 16th day of the month for the given category. | `273.0` |
+| `Day 15` | Integer / Float | Number of accidents occurring on the 15th day of the month for the given category. | `241.0` |
+| `Day 14` | Integer / Float | Number of accidents occurring on the 14th day of the month for the given category. | `238.0` |
+| `Day 13` | Integer / Float | Number of accidents occurring on the 13th day of the month for the given category. | `250.0` |
+| `Day 12` | Integer / Float | Number of accidents occurring on the 12th day of the month for the given category. | `263.0` |
+| `Day 11` | Integer / Float | Number of accidents occurring on the 11th day of the month for the given category. | `265.0` |
+| `Day 10` | Integer / Float | Number of accidents occurring on the 10th day of the month for the given category. | `293.0` |
+| `Day 9`  | Integer / Float | Number of accidents occurring on the 9th day of the month for the given category. | `270.0` |
+| `Day 8`  | Integer / Float | Number of accidents occurring on the 8th day of the month for the given category. | `231.0` |
+| `Day 7`  | Integer / Float | Number of accidents occurring on the 7th day of the month for the given category. | `264.0` |
+| `Day 6`  | Integer / Float | Number of accidents occurring on the 6th day of the month for the given category. | `258.0` |
+| `Day 5`  | Integer / Float | Number of accidents occurring on the 5th day of the month for the given category. | `233.0` |
+| `Day 4`  | Integer / Float | Number of accidents occurring on the 4th day of the month for the given category. | `274.0` |
+| `Day 3`  | Integer / Float | Number of accidents occurring on the 3rd day of the month for the given category. | `239.0` |
+| `Day 2`  | Integer / Float | Number of accidents occurring on the 2nd day of the month for the given category. | `267.0` |
+| `Day 1`  | Integer / Float | Number of accidents occurring on the 1st day of the month for the given category. | `266.0` |
+| `Total`  | Integer / Float | Total annual sum of accidents for the category across all days in 2025. | `7717` |
+| `Month and Severity` | String | Hebrew translation or equivalent label for the category/month. | `כל התאונות` / `ינואר` |
 
 ---
 
-## 4. health.csv
+## `t01_04.xlsx`
 
-**Description:** This table tracks critical health outcomes and healthcare system metrics, such as life expectancy, disease prevalence, mortality rates, and medical expenditures.
+The table tracks road accidents in Israel for the year 2025 broken down by road type (urban vs. non-urban), accident severity (fatal, serious, slight), and calendar month (December through January in reverse order).
 
 | Field Name | Data Type | Description | Sample Value |
 | :--- | :--- | :--- | :--- |
-| location_key | String | Unique identifier linking to the country index. | AE |
-| life_expectancy | Float | Average number of years a person is expected to live. | 77.814 |
-| smoking_prevalence | Float | Percentage of the population that uses tobacco. | 28.9 |
-| diabetes_prevalence | Float | Percentage of the population with diabetes. | 16.3 |
-| infant_mortality_rate | Float | Number of infant deaths per 1,000 live births. | 6.5 |
-| adult_male_mortality_rate | Float | Probability of dying between ages 15 and 60 for males per 1,000. | 69.555 |
-| physicians_per_1000 | Float | Number of medical doctors per 1,000 people. | 2.5278 |
-| health_expenditure_usd | Float | Total health expenditure per capita in USD. | 1357.017 |
-| out_of_pocket_health_expenditure_usd | Float | Direct health payments by individuals per capita in USD. | 256.034 |
+| `Road Type and Severity`  | String | Description of the road type and accident severity category (`All accidents`, `Fatal`, `Serious`, `Slight`, `Urban road`, etc.). | `All accidents` / `Urban road` / `Fatal` |
+| `December` | Integer | Number of accidents occurring in December 2025 for the given category. | `503` |
+| `November` | Integer | Number of accidents occurring in November 2025 for the given category. | `607` |
+| `October`  | Integer | Number of accidents occurring in October 2025 for the given category. | `627` |
+| `September`| Integer | Number of accidents occurring in September 2025 for the given category. | `655` |
+| `August`  | Integer | Number of accidents occurring in August 2025 for the given category. | `636` |
+| `July`    | Integer | Number of accidents occurring in July 2025 for the given category. | `662` |
+| `June`    | Integer | Number of accidents occurring in June 2025 for the given category. | `602` |
+| `May`     | Integer | Number of accidents occurring in May 2025 for the given category. | `742` |
+| `April`   | Integer | Number of accidents occurring in April 2025 for the given category. | `670` |
+| `March`   | Integer | Number of accidents occurring in March 2025 for the given category. | `761` |
+| `February`| Integer | Number of accidents occurring in February 2025 for the given category. | `582` |
+| `January` | Integer | Number of accidents occurring in January 2025 for the given category. | `670` |
+| `Total`   | Integer | Total annual sum of accidents for the category across all months in 2025. | `7717` |
+| `Road Type and Severity`  | String | Hebrew translation or equivalent label for the road type and severity category. | `כל התאונות` / `דרך עירונית` |
 
 ---
 
-## 5. ict adoption by 100 people.csv
+## 5. `t01_05.xlsx` 
 
-**Description:** This dataset monitors the evolution of technology adoption, tracking fixed-line, mobile, broadband, and internet usage rates per 100 people over time.
-
-| Field Name | Data Type | Description | Sample Value |
-| :--- | :--- | :--- | :--- |
-| Entity | String | Name of the country or regional group. | Afghanistan |
-| Code | String | Three-letter ISO country code. | AFG |
-| Year | Integer | The year of the observation. | 2021 |
-| Fixed telephone subscriptions (per 100 people) | Float | Number of landline subscriptions per 100 inhabitants. | 0.364 |
-| Fixed broadband subscriptions (per 100 people) | Float | Number of high-speed internet subscriptions per 100 inhabitants. | 0.0664 |
-| Mobile cellular subscriptions (per 100 people) | Float | Number of mobile phone subscriptions per 100 inhabitants. | 56.6945 |
-| Internet users (per 100 people) | Float | Percentage of the population using the internet. | 16.5143 |
-
-## 6. WHO-COVID-19-global-daily-data.csv
-
-**Description:** This dataset provides a daily time-series of confirmed COVID-19 cases and deaths as reported by various countries and territories to the World Health Organization (WHO).
+The table tracks road accidents in Israel for the year 2025 broken down by road type, accident severity, and day of the week (including Saturday and holiday vs. weekdays), along with daily accident averages and yearly day counts.
 
 | Field Name | Data Type | Description | Sample Value |
 | :--- | :--- | :--- | :--- |
-| Date_reported | Date | The date on which the daily COVID-19 statistics were recorded. | 04/01/2020 |
-| Country_code | String | Two-letter ISO country code identifying the reporting nation. | AF |
-| Country | String | Full name of the reporting country or territory. | Afghanistan |
-| WHO_region | String | The WHO regional office responsible for the reporting area (e.g., EMR, AFR, EUR). | EMR |
-| New_cases | Integer | The number of new confirmed COVID-19 cases reported for that specific day. | 0 |
-| Cumulative_cases | Integer | The total running count of confirmed COVID-19 cases reported to date. | 0 |
-| New_deaths | Integer | The number of new confirmed COVID-19 deaths reported for that specific day. | 0 |
-| Cumulative_deaths | Integer | The total running count of confirmed COVID-19 deaths reported to date. | 0 |
-
-## 7. vaccinations.csv
-
-**Description:** This dataset tracks COVID-19 vaccination progress at a granular level, providing daily and cumulative metrics for persons vaccinated, fully vaccinated, and total doses administered, including brand-specific data for Pfizer, Moderna, Janssen, and Sinovac.
-
-| Field Name | Data Type | Description | Sample Value |
-| :--- | :--- | :--- | :--- |
-| date | Date | The date on which the vaccination data was recorded. | 2021-01-25 |
-| location_key | String | Unique identifier used to link demographic and health data tables. | AD |
-| new_persons_vaccinated | Integer | The number of people who received their first vaccine dose on this date. | 460 |
-| cumulative_persons_vaccinated | Integer | The total number of people who have received at least one vaccine dose to date. | 576 |
-| new_persons_fully_vaccinated | Integer | The number of people who completed their primary vaccination series on this date. | 92 |
-| cumulative_persons_fully_vaccinated | Integer | The total number of people who have completed their primary vaccination series to date. | 1172 |
-| new_vaccine_doses_administered | Integer | The total number of vaccine doses administered on this specific date. | 460 |
-| cumulative_vaccine_doses_administered | Integer | The total number of vaccine doses administered to date. | 1036 |
-| new_persons_vaccinated_pfizer | Integer | Daily count of individuals receiving their first Pfizer dose. | 0 |
-| cumulative_persons_vaccinated_pfizer | Integer | Total count of individuals who have received at least one Pfizer dose. | 0 |
-| new_persons_fully_vaccinated_pfizer | Integer | Daily count of individuals completing the Pfizer series. | 0 |
-| cumulative_persons_fully_vaccinated_pfizer | Integer | Total count of individuals fully vaccinated with Pfizer. | 0 |
-| new_vaccine_doses_administered_pfizer | Integer | Total Pfizer doses administered on this date. | 0 |
-| cumulative_vaccine_doses_administered_pfizer | Integer | Total Pfizer doses administered to date. | 0 |
-| new_persons_vaccinated_moderna | Integer | Daily count of individuals receiving their first Moderna dose. | 0 |
-| cumulative_persons_vaccinated_moderna | Integer | Total count of individuals who have received at least one Moderna dose. | 0 |
-| new_persons_fully_vaccinated_moderna | Integer | Daily count of individuals completing the Moderna series. | 0 |
-| cumulative_persons_fully_vaccinated_moderna | Integer | Total count of individuals fully vaccinated with Moderna. | 0 |
-| new_vaccine_doses_administered_moderna | Integer | Total Moderna doses administered on this date. | 0 |
-| cumulative_vaccine_doses_administered_moderna | Integer | Total Moderna doses administered to date. | 0 |
-| new_persons_vaccinated_janssen | Integer | Daily count of individuals receiving the single-dose Janssen vaccine. | 0 |
-| cumulative_persons_vaccinated_janssen | Integer | Total count of individuals who have received the Janssen vaccine. | 0 |
-| new_persons_fully_vaccinated_janssen | Integer | Daily count of individuals fully vaccinated with Janssen. | 0 |
-| cumulative_persons_fully_vaccinated_janssen | Integer | Total count of individuals fully vaccinated with Janssen. | 0 |
-| new_vaccine_doses_administered_janssen | Integer | Total Janssen doses administered on this date. | 0 |
-| cumulative_vaccine_doses_administered_janssen | Integer | Total Janssen doses administered to date. | 0 |
-| new_persons_vaccinated_sinovac | Integer | Daily count of individuals receiving their first Sinovac dose. | 0 |
-| total_persons_vaccinated_sinovac | Integer | Total count of individuals who have received at least one Sinovac dose. | 0 |
-| new_persons_fully_vaccinated_sinovac | Integer | Daily count of individuals completing the Sinovac series. | 0 |
-| total_persons_fully_vaccinated_sinovac | Integer | Total count of individuals fully vaccinated with Sinovac. | 0 |
-| new_vaccine_doses_administered_sinovac | Integer | Total Sinovac doses administered on this date. | 0 |
-| total_vaccine_doses_administered_sinovac | Integer | Total Sinovac doses administered to date. | 0 |
-
-**Comment:** Due to its huge size and size limitation in GitHub, data file is locatedin following share drive location
-'/content/drive/MyDrive/DS_IsTheWorldReadyForTheNextPandemic/DATASET TO USE/'
-
+| `Road Type and Severity`  | String | Description of the category (`All accidents`, `Fatal`, `Serious`, `Slight`, `Urban road`, `Average number of accidents per day`, etc.). | `All accidents` / `Urban road` / `Fatal` |
+| `Saturday and Holiday`   | Integer / Float | Number of accidents or days for Saturday and holidays. | `810` |
+| `Friday and Holiday Eve` | Integer / Float | Number of accidents or days for Friday and holiday eves. | `1127` |
+| `Thursday`  | Integer / Float | Number of accidents or days for Thursdays. | `1143` |
+| `Wednesday` | Integer / Float | Number of accidents or days for Wednesdays. | `1169` |
+| `Tuesday`   | Integer / Float | Number of accidents or days for Tuesdays. | `1128` |
+| `Monday`    | Integer / Float | Number of accidents or days for Mondays. | `1104` |
+| `Sunday`    | Integer / Float | Number of accidents or days for Sundays. | `1236` |
+| `Total`     | Integer / Float | Total annual sum across all days of the week in 2025. | `7717` |
+| `Road Type and Severity` | String | Hebrew translation or equivalent label for the day of the week and category. | `כל התאונות` / `דרך עירונית` |
 
 ---
 
-## 8. epidemiology.csv
+## 6. `t01_06.xlsx`
 
-**Description:** This dataset tracks the daily and cumulative spread of COVID-19 by location, recording confirmed cases, deaths, recoveries, and testing activity.
+The table tracks road accidents in Israel for the year 2025 broken down by month, accident severity (fatal, serious, slight), and detailed type of accident (including pedestrian collisions, various collision sub-types, single vehicle accidents, and other types).
 
 | Field Name | Data Type | Description | Sample Value |
 | :--- | :--- | :--- | :--- |
-| date | Date | The date on which the epidemiological statistics were recorded. | 2020-01-01 |
-| location_key | String | Unique identifier used to link data across various country and health tables. | AD |
-| new_confirmed | Integer | Number of new confirmed COVID-19 cases reported on this date. | 0 |
-| new_deceased | Integer | Number of new COVID-19 related deaths reported on this date. | 0 |
-| new_recovered | Integer | Number of new COVID-19 recoveries reported on this date. | 0 |
-| new_tested | Integer | Number of new COVID-19 tests performed on this date. | 0 |
-| cumulative_confirmed | Integer | Total number of confirmed COVID-19 cases reported to date. | 0 |
-| cumulative_deceased | Integer | Total number of COVID-19 related deaths reported to date. | 0 |
-| cumulative_recovered | Integer | Total number of COVID-19 recoveries reported to date. | 0 |
-| cumulative_tested | Integer | Total number of COVID-19 tests performed to date. | 0 |
-
-**Comment:** Due to its huge size and size limitation in GitHub, data file is locatedin following share drive location
-'/content/drive/MyDrive/DS_IsTheWorldReadyForTheNextPandemic/DATASET TO USE/'
-
+| `Month and Severity`  | String | Description of the month or aggregate category and severity level (`All accidents`, `Fatal`, `Serious`, `Slight`, `January`, etc.). | `All accidents` / `January` / `Fatal` |
+| `Other and not known` | Integer | Number of accidents classified as other or unknown type. | `117` |
+| `Single vehicle - Falling from moving vehicle`   | Integer | Number of single vehicle accidents due to falling from a moving vehicle. | `41` |
+| `Single vehicle - Injury to passenger in vehicle` | Integer | Number of single vehicle accidents involving injury to a passenger. | `69` |
+| `Single vehicle - Skidding`    | Integer | Number of single vehicle accidents caused by skidding. | `260` |
+| `Single vehicle - Overturning` | Integer | Number of single vehicle accidents involving overturning. | `197` |
+| `Single vehicle - Running off road` | Integer | Number of single vehicle accidents caused by running off the road. | `44` |
+| `Single vehicle - Total` | Integer | Total number of single vehicle accidents. | `611` |
+| `Collisions - With fixed object`   | Integer | Number of collisions with a fixed object. | `264` |
+| `Collisions - With parked vehicle` | Integer | Number of collisions with a parked vehicle. | `195` |
+| `Collisions - Rear end to side/front` | Integer | Number of rear-end collisions with side or front. | `56` |
+| `Collisions - Head-on`   | Integer | Number of head-on collisions. | `554` |
+| `Collisions - Sideswipe` | Integer | Number of sideswipe collisions. | `544` |
+| `Collisions - Front to rear end` | Integer | Number of front-to-rear-end collisions. | `742` |
+| `Collisions - Front to side`     | Integer | Number of front-to-side collisions. | `2651` |
+| `Collisions - Total sub-total`   | Integer | Subtotal of collisions with moving vehicles / general collisions. | `4547` |
+| `Collisions - Grand Total`   | Integer | Total collision accidents. | `5006` |
+| `Hitting a pedestrian`       | Integer | Number of accidents involving hitting a pedestrian. | `1983` |
+| `Grand Total`                | Integer | Total number of road accidents for the category/month. | `7717` |
+| `Month and Severity`               | String | Hebrew translation or equivalent label for the month and severity. | `כל התאונות` / `ינואר` |
 
 ---
+
+## 7. `t01_07.xlsx`
+
+The table tracks road accidents in Israel for the year 2025 broken down by road type, day of the week, and detailed accident/collision types.
+
+| Field Name | Data Type | Description | Sample Value |
+| :--- | :--- | :--- | :--- |
+| `Road Type and Day of the Week`  | String | Description of the road type, aggregate level, or day of the week (`All accidents`, `Sunday`, `Monday`, `Urban road`, etc.). | `All accidents` / `Sunday` |
+| `Other and not known`  | Integer | Number of accidents classified as other or unknown type for the day/category. | `117` |
+| `Single vehicle - Falling from moving vehicle`    | Integer | Number of single vehicle accidents due to falling from moving vehicle. | `41` |
+| `Single vehicle - Injury to passenger in vehicle` | Integer | Number of single vehicle accidents involving injury to passenger. | `69` |
+| `Single vehicle - Skidding`    | Integer | Number of single vehicle accidents caused by skidding. | `260` |
+| `Single vehicle - Overturning` | Integer | Number of single vehicle accidents involving overturning. | `197` |
+| `Single vehicle - Running off road` | Integer | Number of single vehicle accidents caused by running off road. | `44` |
+| `Single vehicle - Total`  | Integer | Total number of single vehicle accidents for the category. | `611` |
+| `Collisions - With fixed object`   | Integer | Number of collisions with a fixed object. | `264` |
+| `Collisions - With parked vehicle` | Integer | Number of collisions with a parked vehicle. | `195` |
+| `Collisions - Rear end to side/front` | Integer | Number of rear-end collisions with side or front. | `56` |
+| `Collisions - Head-on`   | Integer | Number of head-on collisions. | `554` |
+| `Collisions - Sideswipe` | Integer | Number of sideswipe collisions. | `544` |
+| `Collisions - Front to rear end` | Integer | Number of front-to-rear-end collisions. | `742` |
+| `Collisions - Front to side`     | Integer | Number of front-to-side collisions. | `2651` |
+| `Collisions - Total sub-total`   | Integer | Subtotal of collisions with moving vehicles / general collisions. | `4547` |
+| `Collisions - Grand Total`       | Integer | Total collision accidents. | `5006` |
+| `Hitting a pedestrian`           | Integer | Number of accidents involving hitting a pedestrian. | `1983` |
+| `Grand Total`  | Integer | Total number of road accidents for the category/day. | `7717` |
+| `Road Type & Day of week` | String | Hebrew translation or equivalent label for the day of the week and category. | `כל התאונות` / `ראשון` |
+
+---
+
+## 8. `t01_08.xlsx`
+
+The table tracks road accidents in Israel for the year 2025 broken down by road type, hour of the day (0–23), and detailed accident/collision type.
+
+| Field Name | Data Type | Description | Sample Value |
+| :--- | :--- | :--- | :--- |
+| `Road Type and Hour of the Day`  | String / Integer | Description of the road type, aggregate level, or hour of the day (`All accidents`, `6`, `7`, `Urban road`, etc.). | `All accidents` / `6` |
+| `Other and not known`  | Integer | Number of accidents classified as other or unknown type for the hour/category. | `117` |
+| `Single vehicle - Falling from moving vehicle`    | Integer | Number of single vehicle accidents due to falling from moving vehicle. | `41` |
+| `Single vehicle - Injury to passenger in vehicle` | Integer | Number of single vehicle accidents involving injury to passenger. | `69` |
+| `Single vehicle - Skidding`    | Integer | Number of single vehicle accidents caused by skidding. | `260` |
+| `Single vehicle - Overturning` | Integer | Number of single vehicle accidents involving overturning. | `197` |
+| `Single vehicle - Running off road` | Integer | Number of single vehicle accidents caused by running off road. | `44` |
+| `Single vehicle - Total` | Integer | Total number of single vehicle accidents for the hour/category. | `611` |
+| `Collisions - With fixed object` | Integer | Number of collisions with a fixed object. | `264` |
+| `Collisions - With parked vehicle` | Integer | Number of collisions with a parked vehicle. | `195` |
+| `Collisions - Rear end to side/front` | Integer | Number of rear-end collisions with side or front. | `56` |
+| `Collisions - Head-on` | Integer | Number of head-on collisions. | `554` |
+| `Collisions - Sideswipe` | Integer | Number of sideswipe collisions. | `544` |
+| `Collisions - Front to rear end` | Integer | Number of front-to-rear-end collisions. | `742` |
+| `Collisions - Front to side`     | Integer | Number of front-to-side collisions. | `2651` |
+| `Collisions - Total sub-total`   | Integer | Subtotal of collisions with moving vehicles / general collisions. | `4547` |
+| `Collisions - Grand Total`       | Integer | Total collision accidents. | `5006` |
+| `Hitting a pedestrian`           | Integer | Number of accidents involving hitting a pedestrian. | `1983` |
+| `Grand Total`  | Integer | Total number of road accidents for the category/hour. | `7717` |
+| `Road Type & Hour of the day` | String | Hebrew translation or equivalent label for the hour of the day and category. | `כל התאונות` / `6` |
+
+---
+
+## 9. `t01_09.xlsx` 
+
+The table tracks road accidents in Israel for the year 2025, broken down by road type (intersections vs. non-intersections), hour of the day (0–23), accident severity (slight, serious, fatal), and day of the week.
+
+| Field Name | Data Type | Description | Sample Value |
+| :--- | :--- | :--- | :--- |
+| `Road Type and Hour of the Day`  | String / Integer | Description of the road type, aggregate level, or hour of the day (`All accidents`, `6`, `7`, `Urban road`, etc.). | `All accidents` / `6` |
+| `Not at intersection - Saturday and holiday`   | Integer | Accidents not at an intersection on Saturdays/holidays. | `431` |
+| `Not at intersection - Friday and holiday eve` | Integer | Accidents not at an intersection on Fridays/holiday eves. | `609` |
+| `Not at intersection - Thursday`  | Integer | Accidents not at an intersection on Thursdays. | `598` |
+| `Not at intersection - Wednesday` | Integer | Accidents not at an intersection on Wednesdays. | `580` |
+| `Not at intersection - Tuesday`   | Integer | Accidents not at an intersection on Tuesdays. | `581` |
+| `Not at intersection - Monday`    | Integer | Accidents not at an intersection on Mondays. | `579` |
+| `Not at intersection - Sunday`    | Integer | Accidents not at an intersection on Sundays. | `643` |
+| `Not at intersection - Total`     | Integer | Total accidents not at an intersection for the hour/category. | `4021` |
+| `At intersection - Saturday and holiday`  | Integer | Accidents at an intersection on Saturdays/holidays. | `379` |
+| `At intersection - Friday and holiday eve`| Integer | Accidents at an intersection on Fridays/holiday eves. | `518` |
+| `At intersection - Thursday`  | Integer | Accidents at an intersection on Thursdays. | `545` |
+| `At intersection - Wednesday` | Integer | Accidents at an intersection on Wednesdays. | `589` |
+| `At intersection - Tuesday`   | Integer | Accidents at an intersection on Tuesdays. | `547` |
+| `At intersection - Monday`    | Integer | Accidents at an intersection on Mondays. | `525` |
+| `At intersection - Sunday`    | Integer | Accidents at an intersection on Sundays. | `593` |
+| `At intersection - Total`     | Integer | Total accidents at an intersection for the hour/category. | `3696` |
+| `Severity - Slight`   | Integer | Number of slight injury accidents. | `4801` |
+| `Severity - Serious`  | Integer | Number of serious injury accidents. | `2478` |
+| `Severity - Fatal`    | Integer | Number of fatal accidents. | `438` |
+| `Grand Total`   | Integer | Total number of road accidents for the hour/category. | `7717` |
+| `Road Type and Hour of the Day`  | String | Hebrew translation or equivalent label for the hour of the day and category. | `כל התאונות` / `6` |
+
+---
+
+## 10. `t01_10.xlsx`
+
+The table tracks road accidents in Israel for the year 2025, broken down by visibility conditions (day vs. night), specific road/lighting conditions, accident severity, and detailed accident/collision types.
+
+| Field Name | Data Type | Description | Sample Value |
+| :--- | :--- | :--- | :--- |
+| `Visibility and Road Condition`  | String | Description of visibility conditions, lighting, or aggregate level (`All accidents`, `Daytime accidents`, `Ordinary daylight`, `Night accidents`, `Lighting in order`, etc.). | `All accidents` / `Ordinary daylight` |
+| `Other and not known`  | Integer | Number of accidents classified as other or unknown type for the condition. | `117` |
+| `Single vehicle - Falling from moving vehicle`     | Integer | Number of single vehicle accidents due to falling from moving vehicle. | `41` |
+| `Single vehicle - Injury to passenger in vehicle`  | Integer | Number of single vehicle accidents involving injury to passenger. | `69` |
+| `Single vehicle - Skidding`      | Integer | Number of single vehicle accidents caused by skidding. | `260` |
+| `Single vehicle - Overturning`   | Integer | Number of single vehicle accidents involving overturning. | `197` |
+| `Single vehicle - Running off road`    | Integer | Number of single vehicle accidents caused by running off road. | `44` |
+| `Collisions - With fixed object`       | Integer | Number of collisions with a fixed object. | `264` |
+| `Collisions - With parked vehicle`     | Integer | Number of collisions with a parked vehicle. | `195` |
+| `Collisions - Rear end to side/front`  | Integer | Number of rear-end collisions with side or front. | `56` |
+| `Collisions - Head-on`            | Integer | Number of head-on collisions. | `554` |
+| `Collisions - Sideswipe`          | Integer | Number of sideswipe collisions. | `544` |
+| `Collisions - Front to rear end`  | Integer | Number of front-to-rear-end collisions. | `742` |
+| `Collisions - Front to side`  | Integer | Number of front-to-side collisions. | `2651` |
+| `Hitting a pedestrian` | Integer | Number of accidents involving hitting a pedestrian. | `1983` |
+| `Severity - Slight` | Integer | Number of slight injury accidents. | `4801` |
+| `Severity - Serious`| Integer | Number of serious injury accidents. | `2478` |
+| `Severity - Fatal`  | Integer | Number of fatal accidents. | `438` |
+| `Grand Total`   | Integer | Total number of road accidents for the visibility/condition category. | `7717` |
+| `Visibility and Road Condition`  | String | Hebrew translation or equivalent label for the visibility and road condition. | `כל התאונות` / `אור יום רגיל` |
+
+---
+
+## 11. `t01_11.xlsx` 
+
+The table tracks road accidents in Israel for the year 2025, broken down by the main cause of the accident (e.g., driver's offence, pedestrian's action), accident severity (fatal, serious, slight), and detailed accident/collision types.
+
+| Field Name | Data Type | Description | Sample Value |
+| :--- | :--- | :--- | :--- |
+| `Main Cause and Severity`  | String | Description of the main cause category or severity level (`All accidents`, `Driver's offence`, `Fatal`, `Serious`, `Slight`, etc.). | `All accidents` / `Driver's offence` |
+| `Other and not known`  | Integer | Number of accidents classified as other or unknown type for the main cause category. | `117` |
+| `Single vehicle - Falling from moving vehicle`     | Integer | Number of single vehicle accidents due to falling from moving vehicle. | `41` |
+| `Single vehicle - Injury to passenger in vehicle`  | Integer | Number of single vehicle accidents involving injury to passenger. | `69` |
+| `Single vehicle - Skidding`            | Integer | Number of single vehicle accidents caused by skidding. | `260` |
+| `Single vehicle - Overturning`         | Integer | Number of single vehicle accidents involving overturning. | `197` |
+| `Single vehicle - Running off road`    | Integer | Number of single vehicle accidents caused by running off road. | `44` |
+| `Single vehicle - Total`               | Integer | Total number of single vehicle accidents for the main cause category. | `611` |
+| `Collisions - With fixed object`       | Integer | Number of collisions with a fixed object. | `264` |
+| `Collisions - With parked vehicle`     | Integer | Number of collisions with a parked vehicle. | `195` |
+| `Collisions - Rear end to side/front`  | Integer | Number of rear-end collisions with side or front. | `56` |
+| `Collisions - Head-on`            | Integer | Number of head-on collisions. | `554` |
+| `Collisions - Sideswipe`          | Integer | Number of sideswipe collisions. | `544` |
+| `Collisions - Front to rear end`  | Integer | Number of front-to-rear-end collisions. | `742` |
+| `Collisions - Front to side`    | Integer | Number of front-to-side collisions. | `2651` |
+| `Collisions - Total sub-total`  | Integer | Subtotal of collisions with moving vehicles / general collisions. | `4547` |
+| `Collisions - Grand Total`      | Integer | Total collision accidents. | `5006` |
+| `Hitting a pedestrian`          | Integer | Number of accidents involving hitting a pedestrian. | `1983` |
+| `Grand Total`  | Integer | Total number of road accidents for the main cause category. | `7717` |
+| `Main Cause and Severity`  | String | Hebrew translation or equivalent label for the main cause and severity. | `כל התאונות` / `עבירה של נהג` |
+
+---
+
+## 12. `t01_12.xlsx` 
+
+The table tracks road accidents in Israel for the year 2025, broken down by road type (urban vs. non-urban, intersections vs. non-intersections), accident severity (fatal, serious, slight), and detailed accident/collision types.
+
+| Field Name | Data Type | Description | Sample Value |
+| :--- | :--- | :--- | :--- |
+| `Road Type and Severity`  | String | Description of the road type category or severity level (`All accidents`, `Urban road`, `At intersection`, `Fatal`, `Serious`, `Slight`, etc.). | `All accidents` / `Urban road` |
+| `Other and not known`  | Integer | Number of accidents classified as other or unknown type for the road/severity category. | `117` |
+| `Single vehicle - Falling from moving vehicle`    | Integer | Number of single vehicle accidents due to falling from moving vehicle. | `41` |
+| `Single vehicle - Injury to passenger in vehicle` | Integer | Number of single vehicle accidents involving injury to passenger. | `69` |
+| `Single vehicle - Skidding`           | Integer | Number of single vehicle accidents caused by skidding. | `260` |
+| `Single vehicle - Overturning`        | Integer | Number of single vehicle accidents involving overturning. | `197` |
+| `Single vehicle - Running off road`   | Integer | Number of single vehicle accidents caused by running off road. | `44` |
+| `Single vehicle - Total`    | Integer | Total number of single vehicle accidents for the road/severity category. | `611` |
+| `Collisions - With fixed object`       | Integer | Number of collisions with a fixed object. | `264` |
+| `Collisions - With parked vehicle`     | Integer | Number of collisions with a parked vehicle. | `195` |
+| `Collisions - Rear end to side/front`  | Integer | Number of rear-end collisions with side or front. | `56` |
+| `Collisions - Head-on`            | Integer | Number of head-on collisions. | `554` |
+| `Collisions - Sideswipe`          | Integer | Number of sideswipe collisions. | `544` |
+| `Collisions - Front to rear end`  | Integer | Number of front-to-rear-end collisions. | `742` |
+| `Collisions - Front to side`  | Integer | Number of front-to-side collisions. | `2651` |
+| `Collisions - Total sub-total`  | Integer | Subtotal of collisions with moving vehicles / general collisions. | `4547` |
+| `Collisions - Grand Total`  | Integer | Total collision accidents. | `5006` |
+| `Hitting a pedestrian`  | Integer | Number of accidents involving hitting a pedestrian. | `1983` |
+| `Grand Total`  | Integer | Total number of road accidents for the road/severity category. | `7717` |
+| `Road Type and Severity`  | String | Hebrew translation or equivalent label for the road type and severity. | `כל התאונות` / `דרך עירונית` |
+
+---
+
+## 13. `t01_13.xlsx` 
+
+The table tracks road accidents in Israel for the year 2025, broken down by the specific locality where the accident occurred (including major cities with 10,000+ residents, non-urban roads, and urban road aggregates), accident severity, and detailed accident/collision types.
+
+| Field Name | Data Type | Description | Sample Value |
+| :--- | :--- | :--- | :--- |
+| `Locality`  | String | Name of the locality or aggregate category (`Total`, `On non-urban roads`, `On urban roads`, `Tel Aviv-Yafo`, `Jerusalem`, etc.). | `Tel Aviv-Yafo` / `On urban roads` |
+| `Other and not known`  | Integer / Float | Number of accidents classified as other or unknown type for the locality. | `117` |
+| `Single vehicle - Falling from moving vehicle`  | Integer / Float | Number of single vehicle accidents due to falling from moving vehicle. | `41` |
+| `Single vehicle - Injury to passenger in vehicle`  | Integer / Float | Number of single vehicle accidents involving injury to passenger. | `69` |
+| `Single vehicle - Running off road, overturning, skidding`  | Integer / Float | Number of single vehicle accidents caused by running off road, overturning, or skidding. | `501` |
+| `Collisions - Other`  | Integer / Float | Number of other collision types. | `515` |
+| `Collisions - Head-on`  | Integer / Float | Number of head-on collisions. | `554` |
+| `Collisions - Sideswipe`  | Integer / Float | Number of sideswipe collisions. | `544` |
+| `Collisions - Front to rear end`  | Integer / Float | Number of front-to-rear-end collisions. | `742` |
+| `Collisions - Front to side`  | Integer / Float | Number of front-to-side collisions. | `2651` |
+| `Hitting a pedestrian`  | Integer / Float | Number of accidents involving hitting a pedestrian. | `1983` |
+| `Severity - Slight`  | Integer / Float | Number of slight injury accidents in the locality. | `4801` |
+| `Severity - Serious`  | Integer / Float | Number of serious injury accidents in the locality. | `2478` |
+| `Severity - Fatal`  | Integer / Float | Number of fatal accidents in the locality. | `438` |
+| `Grand Total`  | Integer / Float | Total number of road accidents in the locality. | `7717` |
+| `Locality`  | String | Hebrew translation or equivalent label for the locality name. | `תל אביב-יפו` / `בדרכים עירוניות` |
+
+---
+
+## 14. `t01_14.xlsx`
+
+This file tracks road accidents involving pedestrians in Israel for the year 2025, broken down by road type, accident severity, and the pedestrian's action prior to or during the accident (e.g., crossing at a crosswalk with/without traffic lights, walking on sidewalk or road, standing on road, etc.).
+
+| Field Name | Data Type | Description | Sample Value |
+| :--- | :--- | :--- | :--- |
+| `Road Type and Severity`  | String | Description of the road type and severity category (`All accidents`, `Fatal`, `Serious`, `Slight`, `Urban road`, etc.). | `All accidents` / `Fatal` |
+| `Crossed road - Not known / Other`  | Integer | Pedestrian crossing road, specific details unknown. | `108` |
+| `Crossed road - Not in crosswalk, not near intersection` | Integer | Pedestrian crossing not at a crosswalk or near an intersection. | `58` |
+| `Crossed road - Not in crosswalk, near intersection` | Integer | Pedestrian crossing not at a crosswalk but near an intersection. | `229` |
+| `Crossed road - In crosswalk without traffic light` | Integer | Pedestrian crossing in a crosswalk without a traffic light. | `51` |
+| `Crossed road - In crosswalk with traffic light` | Integer | Pedestrian crossing in a crosswalk with a traffic light. | `1073` |
+| `Crossed road - Sub-total`    | Integer | Sub-total for pedestrian crossing road. | `187` |
+| `Did not cross road - Other`  | Integer | Pedestrian not crossing road, other actions. | `1598` |
+| `Did not cross road - Was on sidewalk`         | Integer | Pedestrian standing or walking on sidewalk. | `198` |
+| `Did not cross road - Was on separation area`  | Integer | Pedestrian on separation area/island. | `41` |
+| `Did not cross road - Stood on road`    | Integer | Pedestrian standing on the roadway. | `4` |
+| `Did not cross road - Played on road`   | Integer | Pedestrian playing on the roadway. | `25` |
+| `Did not cross road - Walked opposite to traffic` | Integer | Pedestrian walking opposite to traffic direction. | `3` |
+| `Did not cross road - Walked with traffic`  | Integer | Pedestrian walking with traffic direction. | `6` |
+| `Did not cross road - Sub-total`  | Integer | Sub-total for pedestrian not crossing road. | `277` |
+| `Grand Total`   | Integer | Total number of pedestrian accidents for the category/severity. | `1983` |
+| `Road Type & Severity`  | String | Hebrew translation or equivalent label for the road type and severity. | `כל התאונות` / `קטלניות` |
+
+---
+
+## 15. `sep 2026.xlsx`
+
+The table contains official Israeli Central Bureau of Statistics (CBS) data tracking road accidents with casualties ("Expanded R.A." files) across Israel, including the Judea and Samaria area, published in September 2026. It provides annual totals (2022–2025) and monthly time-series metrics (August 2023–August 2026) broken down by accident and casualty severity, alongside seasonally adjusted and trend figures.
+
+| Field Name | Data Type | Description | Sample Value |
+| :--- | :--- | :--- | :--- |
+| `Year`  | String / Integer | The calendar year of the recorded data (rows with `*` indicate provisional data). | `2022` / `*2026` |
+| `Month` | String (Roman Numeral) | The calendar month of the observation (`I`–`XII`); null for annual aggregate rows. | `VIII` |
+| `Accidents - Total - Original data` | Integer | Raw total count of road accidents involving casualties during the period. | `10404` |
+| `Accidents - Total - Seasonally adjusted` | Integer | Total count of casualty road accidents adjusted for seasonal fluctuations. | `10404` |
+| `Accidents - Total - Trend`  | Integer | Smoothed underlying trend estimate for total casualty road accidents. | `10367` |
+| `Accidents - Fatal`          | Integer | Number of road accidents resulting in at least one fatality. | `319` |
+| `Accidents - Serious`        | Integer | Number of road accidents where the most severe outcome was serious injury. | `2320` |
+| `Casualties - Total - Original data`  | Integer | Raw total count of individuals injured or killed in road accidents. | `18458` |
+| `Casualties - Total - Seasonally adjusted` | Integer | Total count of road accident casualties adjusted for seasonal fluctuations. | `18501` |
+| `Casualties - Total - Trend`  | Integer | Smoothed underlying trend estimate for total road accident casualties. | `18428` |
+| `Casualties - Killed`         | Integer | Total number of individuals killed in road accidents during the period. | `351` |
+| `Casualties - Seriously injured` | Integer | Total number of individuals seriously injured in road accidents during the period. | `2607` |
+
 
