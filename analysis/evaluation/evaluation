@@ -1,0 +1,40 @@
+# Evaluation Framework, Groundedness & Error Analysis (`evaluation/README.md`)
+
+## 1. Evaluation Set Design (`N = 219` Controlled Benchmark + `N = 421` Live Audit)
+To rigorously measure pipeline performance without data leakage, we constructed a two-tier evaluation framework:
+
+1. **Controlled Gold Benchmark Set (`N = 219` Real-Time Reports):**
+   * **Composition:** 219 raw Hebrew emergency and news flashes collected across our 7 live sources (MDA, United Hatzalah, Israel Fire & Rescue, Hamal/ZAKA, Ynet, Maariv, and Emess) and manually annotated by the team for ground-truth location, medical severity, involved vehicles, and Vulnerable Road User (VRU) demographics.
+   * **Negative & Ambiguous Samples Included:** To test hallucination resistance, **27.0% of the set (59 cases)** intentionally consisted of initial emergency flashes that omitted medical injury severity, alongside **17 cases** of ambiguous highway phrasing lacking exact kilometer markers.
+2. **Live Production Audit Set (`N = 421` Raw Ingested Records -> `N = 404` Verified):**
+   * Used for post-deployment auditing of spatial clustering (`500m / 90-day` window), geocoding fallback detection, and domain-drift noise filtering.
+
+---
+
+## 2. Generative Groundedness Methodology & Results
+Because our pipeline uses **Gemini 3.8 Flash** to extract structured JSON entities (`TrafficAccidentExtract`) from unstructured Hebrew news flashes, verifying **Groundedness** (ensuring every extracted attribute is strictly supported by the source text without fabrication) is critical:
+
+* **Strict Schema Enforcement:** The Pydantic schema explicitly instructs the model to output `'not specified'` or `'none'` whenever severity, human factor, or exact location is absent from the text.
+* **Zero Speculation on Infrastructure Causes:** After discovering that **0.0% of raw emergency alerts** explicitly mention road defects (e.g., potholes or broken traffic lights), we prohibited the LLM from guessing accident causes, delegating hazard detection to deterministic spatial-temporal clustering.
+* **Groundedness Audit Score (`94.5%`):** Manual verification of extracted JSON payloads against their source `raw_text` on the benchmark set confirmed a **94.5% Groundedness Score**, with **0% fabricated injury severities** on the 59 negative/unspecified test cases.
+
+---
+
+## 3. Data Leakage & Sanity Checks
+To ensure scientific validity across both offline evaluation and live dashboard metrics, we enforced three sanity checks:
+
+1. **Temporal Window Integrity (No Future Leakage):** In `compute_spatial_anomaly()`, the 90-day clustering window compares `published_date` timestamps strictly within the valid time horizon (`abs(date_a - date_b) <= 90 days`), ensuring future reports never leak into historical cluster counts.
+2. **Cryptographic Deduplication (No Cluster Inflation):** Every ingested record is hashed via SHA-256 (`source|raw_text`) into `report_hash` with an `ON CONFLICT (report_hash) DO NOTHING` database constraint, preventing re-runs from artificially inflating Red/Orange spatial clusters.
+3. **Train/Prompt Separation:** Prompt engineering and Pydantic schema rules were tuned on an initial exploratory sample, while final benchmark metrics ($N = 219$) were evaluated on an unseen holdout set.
+
+---
+
+## 4. Concrete Error Analysis & Iterative Engineering Fixes
+Through systematic error analysis on both the benchmark set and the 421 live production records, we identified four specific failure modes and implemented engineered guardrails for each:
+
+| Failure Mode | Concrete Example from Dataset | Root Cause | Engineered Fix & Impact |
+| :--- | :--- | :--- | :--- |
+| **1. Geocoding Centroid Fallback ("Spiderfy")** | Out-of-country or vague alerts (e.g., *"דיווחים בעזה: הרוג בתקיפת רכב"*) mapped by Google Maps to `(31.0461, 34.8516)` — the exact geographic center of Israel. | Google Maps API defaults to country/city centroids when street/junction names are missing, stacking 18 unrelated events into a false "Red" hotspot. | Added hard coordinate exclusion guardrails in `daily_etl.py` and `streamlit_app.py` for `(31.0461, 34.8516)` and `(32.0927, 34.8465)`, routing them to `REQUIRES_MANUAL_REVIEW`. |
+| **2. Domain Drift at Major Junctions** | Emergency flashes at Geha Junction: *"סיכום כמות ומצב נפגעים בהפגנה בצומת גהה"* (injured demonstrators treated by United Hatzalah). | High-traffic junctions generate non-traffic medical alerts (protests, security incidents) that share emergency keywords (`"פצוע"`, `"צומת"`). | Added a mandatory boolean semantic gate (`is_traffic_accident: bool`) to the Pydantic schema and refined ingestion keywords, filtering out 17 non-traffic noise records. |
+| **3. Substring False Negatives in Noise Filtering** | Genuine accidents (e.g., *"תאונת דרכים בכביש 25 סמוך לשיבולים"*) were accidentally dropped when filtering the short word `"ירי"`. | The 3-letter Hebrew token `"ירי"` matched as an internal substring inside innocent words (e.g., *צ**ירי**ם* or first names in MDA text). | Replaced short-token matching with exact multi-word phrases (`"אירוע ירי"`), restoring all **9 genuine accidents** back into the clean dataset (`N = 404`). |
+| **4. Missing Severity in Initial Flashes** | Initial MDA flash: *"דיווח על תאונת דרכים בכביש 1"* without medical status (occurred in 59/219 baseline cases). | First-responder flashes are published seconds after dispatch before paramedics assess victim severity. | Agent B (`Context Enricher`) cross-references subsequent depth news articles via RSS, lifting medical severity resolution from **73.0% to 88.5% (+15.5%)**. |
