@@ -48,7 +48,7 @@
 
 ```mermaid
 flowchart TD
-    subgraph L1 ["LAYER 1: AUTOMATED INGESTION (Every Day 04:00 AM)"]
+    subgraph L1 ["LAYER 1: AUTOMATED INGESTION (Every Day 04:17 AM)"]
         A1["7 Sources: Telegram Channels & News RSS Feeds"] --> A2["GitHub Actions Scheduling Job"]
         A2 --> A3["Python Scraper (Filtered for Yesterday's Data)"]
     end
