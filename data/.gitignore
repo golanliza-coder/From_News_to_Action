@@ -1,0 +1,53 @@
+# ==========================================
+# 1. Secrets, API Keys & Session Files (CRITICAL)
+# ==========================================
+.env
+.env.*
+*.env
+.streamlit/secrets.toml
+secrets.toml
+*.session
+*.session-journal
+
+# ==========================================
+# 2. Raw Data, Daily JSON Dumps & Large Datasets
+# ==========================================
+data/raw/*.csv
+data/raw/*.xlsx
+data/raw/*.json
+accidents_*.json
+*.parquet
+*.db
+*.sqlite3
+
+# ==========================================
+# 3. Python Cache & Virtual Environments
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ==========================================
+# 4. Jupyter Notebook & Google Colab Checkpoints
+# ==========================================
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# ==========================================
+# 5. IDE & OS System Files
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
