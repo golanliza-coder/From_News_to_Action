@@ -11,7 +11,10 @@
 
 ## 2. Business Problem & Target User
 * **Target User:** Budget CEOs, road safety analysts, and urban infrastructure planners at the National Road Safety Authority (הרלב"ד) and the Ministry of Transport (משרד התחבורה).
-* **Business Problem:** Official Central Bureau of Statistics (CBS / למ"ס) and police road accident reports are published with a 1-to-3-month delay. This delay creates critical visibility "blindspots" that hinder timely infrastructure remediation. **Empirical analysis of 407 verified incidents accumulated in our live system reveals that 45.9% of accidents (187 incidents) occurred within recurring "Red" high-risk clusters ($\ge 3$ accidents within a 500-meter radius over 90 days)**—active hazard hotspots that could have been flagged in real time for engineering intervention months prior to official report releases.
+* **Business Problem:** Official Central Bureau of Statistics (CBS / למ"ס) and police road accident reports are published with a 1-to-3-month delay. This delay creates critical visibility "blindspots" that hinder timely infrastructure remediation. **Empirical analysis of 407 verified incidents accumulated in our live system reveals that 41% of accidents (187 incidents) occurred within recurring "Red" high-risk clusters ($\ge 3$ accidents within a 500-meter radius over 90 days)**—active hazard hotspots that could have been flagged in real time for engineering intervention months prior to official report releases.
+
+Empirical analysis of 373 spatially verified incidents accumulated in our live system (after filtering generic country-center fallbacks) reveals that 41.0% of accidents (153 incidents) occurred within recurring "Red" high-risk clusters (≥ 3 accidents within a 500-meter radius over 90 days)—such as the Geha Interchange / Jabotinsky corridor and Highway 25.
+
 * **Solution:** A 24/7 automated Data-Centric Agentic AI pipeline that ingests raw Hebrew news and emergency alerts within minutes of an incident, transforming unstructured text into clean, geocoded spatial datasets. The system proactively identifies spatial anomalies ("traffic light" risk indicators) and Vulnerable Road User (VRU) trends months before official reports are published.
 
 ---
