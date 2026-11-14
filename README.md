@@ -1,6 +1,4 @@
 
-# From_News_to_Action: A Data-Centric AI Pipeline for Instant Infrastructure Fixes
-
 # From News to Action: A Data-Centric Agentic AI Pipeline for Real-Time Traffic Infrastructure Risk Detection
 
 ## 1. Project Overview & Team
