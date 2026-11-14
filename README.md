@@ -11,8 +11,8 @@
 
 ## 2. Business Problem & Target User
 * **Target User:** Budget CEOs, road safety analysts, and urban infrastructure planners at the National Road Safety Authority (הרלב"ד) and the Ministry of Transport (משרד התחבורה).
-* **Business Problem:** Official Central Bureau of Statistics (CBS / למ"ס) and police road accident reports are published with a 1-to-6-month delay. This creates critical visibility "blindspots" that delay infrastructure remediation, leading to an estimated **15% increase in recurring accidents** at untreated hazardous locations.
-* **Solution:** A 24/7 automated Data-Centric Agentic AI pipeline that ingests raw Hebrew news and emergency alerts within minutes of an incident, transforming unstructured text into clean, geocoded spatial datasets. The system proactively identifies spatial anomalies ("traffic light" risk indicators) and Vulnerable Road User (VRU) trends months before official reports are released.
+* **Business Problem:** Official Central Bureau of Statistics (CBS / למ"ס) and police road accident reports are published with a 1-to-3-month delay. This delay creates critical visibility "blindspots" that hinder timely infrastructure remediation. **Empirical analysis of 407 verified incidents accumulated in our live system reveals that 45.9% of accidents (187 incidents) occurred within recurring "Red" high-risk clusters ($\ge 3$ accidents within a 500-meter radius over 90 days)**—active hazard hotspots that could have been flagged in real time for engineering intervention months prior to official report releases.
+* **Solution:** A 24/7 automated Data-Centric Agentic AI pipeline that ingests raw Hebrew news and emergency alerts within minutes of an incident, transforming unstructured text into clean, geocoded spatial datasets. The system proactively identifies spatial anomalies ("traffic light" risk indicators) and Vulnerable Road User (VRU) trends months before official reports are published.
 
 ---
 
@@ -22,8 +22,7 @@ The pipeline automatically ingests and cross-references data from **7 live paral
 * **Major News RSS Feeds (3 Sources):** Ynet, Maariv (מעריב), and Israel Hayom (ישראל היום).
 * **Spatial & Navigation APIs:** Google Maps Geocoding API for converting cleaned Hebrew location strings into precise GPS coordinates.
 * **Ground Truth Validation:** Official historical road accident datasets (2024–2025) from Data.gov.il (CBS / למ"ס) used for comparative benchmarking and validating alerts on known "red roads".
-* **Data Scale:** Evaluated on a verified benchmark set ($N=219$ real-time reports) and continuously accumulating daily incidents (252+ incidents active in production).
-
+* **Data Scale:** Evaluated on a verified benchmark set ($N=219$ real-time reports) and continuously accumulating daily incidents autonomously (**over 407 verified incidents** active in production).
 ---
 
 ## 4. Methodology & Architecture
