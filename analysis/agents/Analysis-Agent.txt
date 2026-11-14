@@ -1,0 +1,1 @@
+The content of agent is placed in LangGraph _04.ipynb notebook under "notebooks" folder.
