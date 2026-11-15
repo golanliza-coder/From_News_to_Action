@@ -54,7 +54,7 @@ flowchart TD
 ```
 
 ### Core Technical Components
-1. **Automated Cloud Ingestion (Layer 1):** A daily GitHub Actions cron job (04:00 AM IST / 02:00 UTC) scrapes the previous day's reports from Telegram (via Telethon `StringSession`) and news RSS feeds, preventing duplicates via an MD5 `report_hash` UPSERT mechanism.
+1. **Automated Cloud Ingestion (Layer 1):** A daily GitHub Actions cron job (04:00 AM IST / 02:00 UTC) scrapes the previous day's reports from Telegram (via Telethon `StringSession`) and news RSS feeds, preventing duplicates via an SHA-256 `report_hash` UPSERT mechanism.
 2. **Structured Entity Extraction (Layer 2):** Uses **Gemini (3.8 Flash)** with a strict **Pydantic JSON Schema** to extract `accident_severity`, `location_raw_text`, `involved_vehicles` (including micro-mobility), and Vulnerable Road Users (`VRU` demographics: children 0–18, seniors 60+, pedestrians) while maintaining a >90% Groundedness Score.
 3. **Multi-Agent AI Core (Layer 3 - LangGraph):**
    * **Agent A (The Spatial Resolver):** Cleans complex Hebrew prepositions (e.g., "סמוך ל...", "לכיוון דרום") and iteratively queries `Advanced_Geocoding_Tool` (Google Maps API) to resolve generic city/highway center guesses ("Spiderfy" clusters) into exact intersections and interchanges.
