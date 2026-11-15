@@ -1,24 +1,20 @@
 import hashlib
-import re
+from typing import List
 
-# ביטויים מרובי מילים למניעת פסילת תאונות אמיתיות (כמו המילה "צירים")
-EXCLUDED_PHRASES = ["אירוע ירי", "פיגוע ירי", "ירי רקטות", "הפגנה", "מחאה"]
+KEYWORDS: List[str] = [
+    "תאונה", "תאונת דרכים", "הולך רגל", "התנגשות", "אופנוע",
+    "קורקינט", "התהפך", "התהפכות", "נפגע מרכב", "רוכב אופניים", "דריסה"
+]
+
+
+def has_traffic_keyword(text: str) -> bool:
+    """בודק האם הטקסט מכיל לפחות אחת ממילות המפתח התחבורתיות."""
+    if not text:
+        return False
+    return any(k in text for k in KEYWORDS)
+
 
 def generate_report_hash(source: str, raw_text: str) -> str:
-    """יוצר מזהה SHA-256 ייחודי למניעת הזרקת כפילויות למסד הנתונים."""
-    clean_str = f"{source.strip()}|{raw_text.strip()}"
-    return hashlib.sha256(clean_str.encode('utf-8')).hexdigest()
-
-def is_valid_accident_text(text: str) -> bool:
-    """מסנן דיווחים שאינם תאונות דרכים על בסיס ביטויים מדויקים."""
-    if not text or len(text.strip()) < 15:
-        return False
-    for phrase in EXCLUDED_PHRASES:
-        if phrase in text:
-            return False
-    return True
-
-def clean_hebrew_location(location_str: str) -> str:
-    """מנקה מילות יחס מבלבלות לפני שליחה ל-Geocoding."""
-    cleaned = re.sub(r'\b(לכיוון|סמוך ל|ליד|באזור)\b', '', location_str)
-    return " ".join(cleaned.split())
+    """יוצר מזהה SHA-256 ייחודי זהה ללוגיקת ה-ON CONFLICT ב-Neon."""
+    seed = f"{source}|{raw_text}"
+    return hashlib.sha256(seed.encode("utf-8")).hexdigest()
