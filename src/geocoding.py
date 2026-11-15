@@ -1,30 +1,25 @@
 from typing import Optional, Tuple
 import googlemaps
 
-# קואורדינטות ברירת מחדל גנריות של מרכז ישראל שגוגל מפות מחזיר כשאין דיוק
-ISRAEL_CENTROID = (31.0461, 34.8516)
-TOLERANCE = 0.005
 
-def is_generic_centroid(lat: float, lng: float) -> bool:
-    """בודק אם הקואורדינטות שנמצאו הן נקודת האמצע הגנרית של המדינה."""
-    return (
-        abs(lat - ISRAEL_CENTROID[0]) < TOLERANCE and 
-        abs(lng - ISRAEL_CENTROID[1]) < TOLERANCE
-    )
+def geocode_israel_location(
+    gmaps_client: googlemaps.Client,
+    verbal_location: str
+) -> Tuple[Optional[float], Optional[float], str]:
+    """
+    מבצע גיאוקודינג מול Google Maps עם מעקה בטיחות לפסילת נקודת האמצע הגנרית של ישראל.
+    מחזיר: (latitude, longitude, agent_status)
+    """
+    lat, lon = None, None
+    if verbal_location and "not specified" not in verbal_location.lower():
+        geo = gmaps_client.geocode(f"{verbal_location}, ישראל")
+        if geo and isinstance(geo, list) and len(geo) > 0:
+            first_res = geo[0]
+            cand_lat = float(first_res["geometry"]["location"]["lat"])
+            cand_lon = float(first_res["geometry"]["location"]["lng"])
+            # Guardrail: פסילת נקודת מרכז ישראל הגנרית (31.0461, 34.8516)
+            if not (round(cand_lat, 4) == 31.0461 and round(cand_lon, 4) == 34.8516):
+                lat, lon = cand_lat, cand_lon
 
-def safe_geocode(gmaps_client: googlemaps.Client, location_text: str) -> Tuple[Optional[float], Optional[float], str]:
-    """מבצע גיאוקודינג עם מעקה בטיחות נגד נקודות גנריות."""
-    if not location_text or location_text == 'לא מצוין':
-        return None, None, "REQUIRES_MANUAL_REVIEW"
-    
-    results = gmaps_client.geocode(f"{location_text}, ישראל", language="iw")
-    if not results:
-        return None, None, "REQUIRES_MANUAL_REVIEW"
-        
-    loc = results[0]['geometry']['location']
-    lat, lng = float(loc['lat']), float(loc['lng'])
-    
-    if is_generic_centroid(lat, lng):
-        return None, None, "REQUIRES_MANUAL_REVIEW"
-        
-    return lat, lng, "VERIFIED"
+    agent_status = "VERIFIED" if lat else "REQUIRES_MANUAL_REVIEW"
+    return lat, lon, agent_status
