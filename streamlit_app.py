@@ -37,23 +37,11 @@ st.markdown("""
 div[data-baseweb="tag"] {
     background-color: #B3E5FC !important;
     color: #01579B !important;
-}
-div[data-baseweb="tag"] svg {
-    fill: #01579B !important;
-}
-/* שינוי צבע תגיות הבחירה (Multiselect) מאדום לתכלת */
-div[data-baseweb="tag"] {
-    background-color: #B3E5FC !important;
-    color: #01579B !important;
     border-radius: 6px !important;
 }
-
-/* שינוי צבע אייקון ה-X למחיקת תגית */
 div[data-baseweb="tag"] svg {
     fill: #01579B !important;
 }
-
-/* שינוי צבע המסגרת של תיבת הסינון כשלוחצים עליה מאדום לתכלת-כחול */
 div[data-baseweb="select"] > div:focus-within {
     border-color: #0288D1 !important;
     box-shadow: 0 0 0 1px #0288D1 !important;
@@ -81,6 +69,8 @@ sev_map = {
     'severe': 'קשה / קטלנית', 'fatal': 'קטלנית', 'hard': 'קשה',
     'medium': 'בינונית', 'light': 'קלה', 'mild': 'קלה', 'unknown': 'לא מצוין'
 }
+sev_rank = {'קטלנית': 5, 'קשה / קטלנית': 4, 'קשה': 3, 'בינונית': 2, 'קלה': 1, 'לא מצוין': 0}
+
 veh_map = {
     'car': 'רכב פרטי', 'bus': 'אוטובוס', 'motorcycle': 'אופנוע', 'tractor': 'טרקטור',
     'bicycle': 'אופניים', 'truck': 'משאית', 'electric scooter': 'קורקינט חשמלי',
@@ -106,6 +96,66 @@ def classify_vuln(raw_v, v_list):
         if any(w in vs for w in two_wheel_keys):
             cats.add('רוכבי דו-גלגלי / מיקרו-מוביליטי')
     return list(cats)
+def deduplicate_incidents(df):
+    """מאחד דיווחים כפולים על אותו אירוע (רדיוס עד 500 מ' והפרש זמן עד 3 שעות)"""
+    if df.empty:
+        return df
+    df = df.sort_values('pub_date').reset_index(drop=True)
+    merged_rows = []
+    used = set()
+
+    for i in range(len(df)):
+        if i in used:
+            continue
+        base = df.iloc[i].to_dict()
+        sources = [s.strip() for s in str(base['source']).split(',') if s.strip()]
+        raw_texts = [base['raw_text']]
+        vehs = list(base['vehs']) if isinstance(base['vehs'], list) else []
+        vulns = set(base['vulns']) if isinstance(base['vulns'], list) else set()
+
+        if pd.notna(base['lat']) and pd.notna(base['lon']) and pd.notna(base['pub_date']):
+            lat1, lon1 = np.radians(base['lat']), np.radians(base['lon'])
+            t1 = base['pub_date']
+            for j in range(i + 1, len(df)):
+                if j in used:
+                    continue
+                cand = df.iloc[j]
+                if pd.isna(cand['lat']) or pd.isna(cand['lon']) or pd.isna(cand['pub_date']):
+                    continue
+                time_diff_h = abs((cand['pub_date'] - t1).total_seconds()) / 3600.0
+                if time_diff_h > 3.0:
+                    break
+                lat2, lon2 = np.radians(cand['lat']), np.radians(cand['lon'])
+                dlat, dlon = lat2 - lat1, lon2 - lon1
+                a = np.sin(dlat / 2.0)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0)**2
+                dist_m = 6371000 * 2 * np.arcsin(np.sqrt(a))
+
+                if dist_m <= 500:
+                    used.add(j)
+                    for s in str(cand['source']).split(','):
+                        s = s.strip()
+                        if s and s not in sources:
+                            sources.append(s)
+                    if sev_rank.get(cand['sev'], 0) > sev_rank.get(base['sev'], 0):
+                        base['sev'] = cand['sev']
+                    if isinstance(cand['vehs'], list):
+                        for v in cand['vehs']:
+                            if v not in vehs:
+                                vehs.append(v)
+                    if isinstance(cand['vulns'], list):
+                        vulns.update(cand['vulns'])
+                    if cand['raw_text'] and cand['raw_text'] not in raw_texts:
+                        raw_texts.append(f"[{cand['source']}]: {cand['raw_text']}")
+
+        base['source'] = ", ".join(sources)
+        base['vehs'] = vehs
+        base['vulns'] = list(vulns)
+        base['has_2w'] = base['has_2w'] or any(k in " ".join(str(v).lower() for v in vehs) for k in two_wheel_keys)
+        base['has_vru'] = len(vulns) > 0
+        base['raw_text'] = " | ".join(raw_texts)
+        merged_rows.append(base)
+
+    return pd.DataFrame(merged_rows)
 
 def compute_spatial_anomaly(df):
     df['cluster_count'], df['suspected__hazard'] = 1, False
@@ -170,157 +220,5 @@ def load_data():
             'has_vru': len(vulns) > 0,
             'raw_text': d.get('raw_text', '')
         })
-    return compute_spatial_anomaly(pd.DataFrame(rows).drop_duplicates(subset=['id']))
-
-try:
-    df_all = load_data()
-    active_f = st.query_params.get("f", "ALL")
-
-    # ------------------ סרגל סינון אינטראקטיבי בצד ------------------
-    st.sidebar.header("🔍 סרגל סינון נתונים")
-    min_d, max_d = df_all['pub_date'].min().date(), df_all['pub_date'].max().date()
-    date_range = st.sidebar.date_input("טווח תאריכים", value=(min_d, max_d), min_value=min_d, max_value=max_d)
-    
-    sel_sev = st.sidebar.multiselect("רמת חומרה", options=sorted(df_all['sev'].unique().tolist()), default=sorted(df_all['sev'].unique().tolist()))
-    sel_src = st.sidebar.multiselect("ערוץ מקור", options=sorted(df_all['source'].unique().tolist()), default=sorted(df_all['source'].unique().tolist()))
-    
-    # מסנן מדד הרמזור החדש (multiselect)
-    tl_options = [
-        "🔴 אדום - התרעת אנומליה מרחבית (3+)",
-        "🟠 כתום - אזהרה (2 אירועים)",
-        "🟢 תקין (אירוע בודד)"
-    ]
-    sel_tl = st.sidebar.multiselect("מדד רמזור", options=tl_options, default=tl_options)
-    
-    # תיבת הסימון הקיימת בתחתית הסרגל
-    only_red = st.sidebar.checkbox("הצג מוקדי אנומליה אדומים בלבד (3+)", value=False)
-
-    if active_f != 'ALL':
-        if st.sidebar.button("🔄 נקה סינון כרטיסייה (הצג הכל)", width='stretch'):
-            st.query_params.clear()
-            st.rerun()
-
-    # ------------------ לוגיקת סינון הדאטה ------------------
-    df_base = df_all[
-        df_all['sev'].isin(sel_sev) &
-        df_all['source'].isin(sel_src) &
-        df_all['hazard_level'].isin(sel_tl)
-    ].copy()
-    
-    if isinstance(date_range, (tuple, list)) and len(date_range) == 2:
-        start_d, end_d = date_range
-        df_base = df_base[(df_base['pub_date'].dt.date >= start_d) & (df_base['pub_date'].dt.date <= end_d)]
-
-    if only_red:
-        df_base = df_base[df_base['suspected__hazard']]
-
-    # חישוב מדדי הרמזור מתוך הטבלה המסוננת
-    red_cnt = int((df_base['cluster_count'] >= 3).sum())
-    orange_cnt = int((df_base['cluster_count'] == 2).sum())
-    green_cnt = int((df_base['cluster_count'] == 1).sum())
-
-    # סינון נוסף לפי לחיצה על כרטיסיית KPI עליונה
-    df_view = df_base.copy()
-    if active_f == "2W":
-        df_view = df_view[df_view['has_2w']]
-    elif active_f == "VRU":
-        df_view = df_view[df_view['has_vru']]
-
-    total_base = len(df_view)
-    total_sources = df_view['source'].nunique()
-    fatal_cnt = len(df_view[df_view['sev'].isin(('קטלנית', 'קשה / קטלנית', 'קשה'))])
-    cnt_2w = int(df_view['has_2w'].sum())
-    cnt_vru = int(df_view['has_vru'].sum())
-    pct_2w = round((cnt_2w / total_base) * 100) if total_base else 0
-    pct_vru = round((cnt_vru / total_base) * 100) if total_base else 0
-
-    # ------------------ שורה 1: 5 מדדי מפתח ------------------   
-    c1, c2, c3, c4, c5 = st.columns(5)
-    c1.markdown(f"<div class='kpi-card'><div style='font-weight:700;font-size:1.15rem;color:#B71C1C;'>💀 קטלניות / קשות</div><div style='font-weight:800;font-size:2.4rem;margin-top:6px;color:#B71C1C;'>{fatal_cnt}</div></div>", unsafe_allow_html=True)
-
-    next_2w = "ALL" if active_f == "2W" else "2W"
-    bg_2w = "background-color:#BBDEFB;border-color:#1565C0;" if active_f == "2W" else ""
-    c2.markdown(f"<div class='kpi-card'><div style='font-weight:700;font-size:1.15rem;color:#006064;'>🛵 מעורבות דו-גלגלי</div><div style='font-weight:800;font-size:2.4rem;margin-top:6px;color:#006064;'>{pct_2w}%</div><div style='font-size:0.95rem;color:#444;'>({cnt_2w})</div></div>", unsafe_allow_html=True)
-
-    next_vru = "ALL" if active_f == "VRU" else "VRU"
-    bg_vru = "background-color:#BBDEFB;border-color:#1565C0;" if active_f == "VRU" else ""
-    c3.markdown(f"<div class='kpi-card'><div style='font-weight:700;font-size:1.15rem;color:#1565C0;'>🚶 אוכלוסיות סיכון</div><div style='font-weight:800;font-size:2.4rem;margin-top:6px;color:#1565C0;'>{pct_vru}%</div><div style='font-size:0.95rem;color:#444;'>({cnt_vru})</div></div>", unsafe_allow_html=True)
-    
-    c4.markdown(f"<div class='kpi-card'><div style='font-weight:700;font-size:1.15rem;color:#4A148C;'>📰 מקורות מידע</div><div style='font-weight:800;font-size:2.4rem;margin-top:6px;color:#4A148C;'>{total_sources}</div></div>", unsafe_allow_html=True)
-    c5.markdown(f"<div class='kpi-card'><div style='font-weight:700;font-size:1.15rem;color:#0D47A1;'>📊 סה\"כ אירועים</div><div style='font-weight:800;font-size:2.4rem;margin-top:6px;color:#0D47A1;'>{total_base}</div></div>", unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # ------------------ שורה 2: כרטיסיות מדד הרמזור ------------------
-    st.markdown("<h4 style='text-align: right;'>🚦 מדד רמזור: התרעות אנומליה מרחבית (רדיוס 500 מ' / 90 יום)</h4>", unsafe_allow_html=True)
-    tl1, tl2, tl3 = st.columns(3)
-    tl1.markdown(f"<div class='meta-card' style='border-top: 5px solid #2E7D32;'><div style='color:#2E7D32;font-weight:bold;font-size:1.15rem;'>🟢 תקין / בודד (1)</div><div style='font-size:2.4rem;font-weight:800;margin:6px 0;'>{green_cnt}</div><div style='font-size:0.95rem;color:#555;'>אירוע יחיד במרחב</div></div>", unsafe_allow_html=True)
-    tl2.markdown(f"<div class='meta-card' style='border-top: 5px solid #F57C00;'><div style='color:#F57C00;font-weight:bold;font-size:1.15rem;'>🟠 רמת אזהרה (2)</div><div style='font-size:2.4rem;font-weight:800;margin:6px 0;'>{orange_cnt}</div><div style='font-size:0.95rem;color:#555;'>תאונות ברדיוס 500 מ'</div></div>", unsafe_allow_html=True)
-    tl3.markdown(f"<div class='meta-card' style='border-top: 5px solid #D32F2F;'><div style='color:#D32F2F;font-weight:bold;font-size:1.15rem;'>🔴 אנומליה מרחבית (+3)</div><div style='font-size:2.4rem;font-weight:800;margin:6px 0;'>{red_cnt}</div><div style='font-size:0.95rem;color:#555;'>suspected_hazard = True</div></div>", unsafe_allow_html=True)
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # ------------------ שורה 3: מפה אינטראקטיבית ------------------
-    st.markdown("<h4 style='text-align: right;'>🗺️ פריסת אירועים ומוקדי אנומליה במרחב ישראל</h4>", unsafe_allow_html=True)
-    map_df = df_view.dropna(subset=['lat', 'lon']).copy()
-    if not map_df.empty:
-        map_df['date_str'] = map_df['pub_date'].dt.strftime('%Y-%m-%d')
-        layer = pdk.Layer(
-            "ScatterplotLayer",
-            data=map_df,
-            get_position='[lon, lat]',
-            get_fill_color='[r, g, b, 200]',
-            get_radius=450,
-            radius_min_pixels=6,
-            radius_max_pixels=22,
-            pickable=True,
-        )
-        view_state = pdk.ViewState(
-            latitude=float(map_df['lat'].mean()),
-            longitude=float(map_df['lon'].mean()),
-            zoom=7.5,
-            pitch=0
-        )
-        st.pydeck_chart(
-            pdk.Deck(
-                map_style='light',
-                layers=[layer],
-                initial_view_state=view_state,
-                tooltip={"html": "<b>מיקום:</b> {loc}<br/><b>סטטוס:</b> {hazard_level}<br/><b>חומרה:</b> {sev}<br/><b>תאריך:</b> {date_str}"}
-            ),
-            width='stretch'
-        )
-    else:
-        st.info("אין אירועים עם נקודות ציון גאוגרפיות תקינות להצגה במפה עבור הסינון שנבחר.")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # ------------------ שורה 4: גרפי ניתוח ------------------
-    g1, g2 = st.columns(2)
-    with g1:
-        st.markdown("<h5 style='text-align: right;'>📈 התפלגות אירועים לפי רמת חומרה</h5>", unsafe_allow_html=True)
-        sev_counts = df_view['sev'].value_counts().reset_index()
-        sev_counts.columns = ['רמת חומרה', 'כמות']
-        fig_sev = px.pie(sev_counts, names='רמת חומרה', values='כמות', hole=0.4)
-        fig_sev.update_layout(margin=dict(t=20, b=20, l=20, r=20), paper_bgcolor='rgba(0,0,0,0)')
-        st.plotly_chart(fig_sev, width='stretch')
-
-    with g2:
-        st.markdown("<h5 style='text-align: right;'>🚗 סוגי כלי רכב מעורבים (Top 10)</h5>", unsafe_allow_html=True)
-        all_vehs = [veh_map.get(str(v).lower().strip(), str(v)) for sublist in df_view['vehs'] if isinstance(sublist, list) for v in sublist]
-        if all_vehs:
-            veh_counts = pd.Series(all_vehs).value_counts().head(10).reset_index()
-            veh_counts.columns = ['סוג רכב', 'כמות']
-            fig_veh = px.bar(veh_counts, x='כמות', y='סוג רכב', orientation='h', color_discrete_sequence=['#1976D2'])
-            fig_veh.update_layout(yaxis={'categoryorder': 'total ascending'}, margin=dict(t=20, b=20, l=20, r=20), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-            st.plotly_chart(fig_veh, width='stretch')
-        else:
-            st.info("אין נתוני כלי רכב להצגה בסינון הנוכחי.")
-
-    # ------------------ שורה 5: טבלת פירוט אירועים ------------------
-    with st.expander("📋 צפייה בטבלת האירועים המסוננים"):
-        display_df = df_view[['pub_date', 'source', 'loc', 'sev', 'hazard_level', 'cluster_count', 'raw_text']].copy()
-        display_df.columns = ['תאריך פרסום', 'מקור', 'מיקום', 'חומרה', 'מדד רמזור', 'מספר אירועים באשכול', 'טקסט דיווח']
-        st.dataframe(display_df.sort_values(by='תאריך פרסום', ascending=False), width='stretch')
-
-except Exception as e:
-    st.error(f"שגיאה בטעינת הדשבורד: {e}")
+    df_clean = deduplicate_incidents(pd.DataFrame(rows).drop_duplicates(subset=['id']))
+    return compute_spatial_anomaly(df_clean)
