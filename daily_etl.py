@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import math
 import hashlib
 import asyncio
 import feedparser
@@ -24,7 +25,6 @@ TG_API_HASH = os.environ["TELEGRAM_API_HASH"]
 TG_SESSION = os.environ["TELEGRAM_SESSION_STRING"]
 RUN_TARGET = os.environ.get("RUN_TARGET", "yesterday")
 
-# מיקוד במילות מפתח תחבורתיות (ללא "פצוע"/"הרוג" כלליים שמביאים הפגנות ואירועים פליליים)
 KEYWORDS = [
     "תאונה", "תאונת דרכים", "הולך רגל", "התנגשות", "אופנוע",
     "קורקינט", "התהפך", "התהפכות", "נפגע מרכב", "רוכב אופניים", "דריסה"
@@ -48,6 +48,51 @@ class TrafficAccidentExtract(BaseModel):
     verbal_location: str = Field(description="מיקום מדויק בישראל לחילוץ גיאוגרפי או 'not specified'")
 
 
+def haversine_meters(lat1, lon1, lat2, lon2) -> float:
+    """מחשב מרחק במטרים בין שתי נקודות GPS"""
+    if None in (lat1, lon1, lat2, lon2):
+        return float('inf')
+    R = 6371000
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+    return 2 * R * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def merge_with_llm(gemini_client, existing_item: dict, new_item: dict) -> dict:
+    """מאחד שני דיווחים על אותה תאונה לרשומה אחת עשירה"""
+    prompt = (
+        "לפניך שני דיווחים על אותה תאונת דרכים ממקורות שונים. "
+        "אחד את המידע ביניהם כך שתישמר חומרת הפציעה המדויקת והמעודכנת ביותר, כלל כלי הרכב המעורבים, "
+        "וכלל המידע על נפגעים פגיעים (VRU).\n\n"
+        f"דיווח 1 ({existing_item['source']}): {existing_item['raw_text']}\n"
+        f"חילוץ 1: {json.dumps(existing_item, ensure_ascii=False)}\n\n"
+        f"דיווח 2 ({new_item['source']}): {new_item['raw_text']}\n"
+        f"חילוץ 2: {json.dumps(new_item, ensure_ascii=False)}"
+    )
+    config = types.GenerateContentConfig(
+        response_mime_type="application/json",
+        response_schema=TrafficAccidentExtract,
+        temperature=0.0
+    )
+    resp = gemini_client.models.generate_content(
+        model="gemini-3.8-flash",
+        contents=prompt,
+        config=config
+    )
+    merged_extract = json.loads(resp.text)
+
+    combined_sources = list(dict.fromkeys(existing_item["source"].split(", ") + [new_item["source"]]))
+    existing_item.update(merged_extract)
+    existing_item["source"] = ", ".join(combined_sources)
+    existing_item["raw_text"] = f"{existing_item['raw_text']}\n---\n[{new_item['source']}]: {new_item['raw_text']}"
+    existing_item["latitude"] = existing_item["latitude"] or new_item["latitude"]
+    existing_item["longitude"] = existing_item["longitude"] or new_item["longitude"]
+    existing_item["agent_status"] = "MERGED_VERIFIED"
+    return existing_item
+
+
 async def collect_telegram() -> List[dict]:
     records = []
     channels = ['mdaisrael', 'uh1221', 'hamalnews', 'fireisrael7777']
@@ -68,7 +113,6 @@ async def collect_telegram() -> List[dict]:
                         "published_date": msg_il.replace(tzinfo=None).isoformat()
                     })
     return records
-
 
 def collect_rss() -> List[dict]:
     records = []
@@ -95,8 +139,6 @@ def collect_rss() -> List[dict]:
                 pub_str = start_target.replace(tzinfo=None).isoformat()
             records.append({"source": src, "raw_text": full_text, "published_date": pub_str})
     return records
-
-
 def enrich_and_upload(raw_records: List[dict]):
     if not raw_records:
         print(f"ℹ️ לא נמצאו דיווחים חדשים עבור {target_date}.")
@@ -104,7 +146,7 @@ def enrich_and_upload(raw_records: List[dict]):
 
     gemini_client = genai.Client(api_key=GEMINI_KEY)
     gmaps_client = googlemaps.Client(key=MAPS_KEY)
-    enriched_list = []
+    raw_enriched_list = []
 
     print(f"🧠 מנתח {len(raw_records)} דיווחים מתאריך {target_date} באמצעות gemini-3.8-flash...")
     for rec in raw_records:
@@ -126,7 +168,6 @@ def enrich_and_upload(raw_records: List[dict]):
             )
             data = json.loads(resp.text)
 
-            # שער אימות סמנטי: דילוג על דיווחים שאינם תאונות דרכים
             if not data.get("is_traffic_accident", False):
                 print(f"🚫 סונן (אירוע שאינו תאונת דרכים): {rec['raw_text'][:55]}...")
                 time.sleep(0.3)
@@ -140,7 +181,6 @@ def enrich_and_upload(raw_records: List[dict]):
                     first_res = geo[0]
                     cand_lat = float(first_res["geometry"]["location"]["lat"])
                     cand_lon = float(first_res["geometry"]["location"]["lng"])
-                    # Guardrail: פסילת נקודת מרכז ישראל הגנרית (31.0461, 34.8516)
                     if not (round(cand_lat, 4) == 31.0461 and round(cand_lon, 4) == 34.8516):
                         lat, lon = cand_lat, cand_lon
 
@@ -152,17 +192,43 @@ def enrich_and_upload(raw_records: List[dict]):
                 "longitude": lon,
                 "agent_status": "VERIFIED" if lat else "REQUIRES_MANUAL_REVIEW"
             })
-            enriched_list.append(data)
+            raw_enriched_list.append(data)
             time.sleep(0.4)
         except Exception as e:
             print(f"⚠️ דילוג על רשומה עקב שגיאה: {e}")
 
+    deduplicated_list = []
+    raw_enriched_list.sort(key=lambda x: x["published_date"])
+
+    for item in raw_enriched_list:
+        item_dt = datetime.fromisoformat(item["published_date"])
+        matched_idx = None
+
+        for idx, existing in enumerate(deduplicated_list):
+            ex_dt = datetime.fromisoformat(existing["published_date"])
+            time_diff_hours = abs((item_dt - ex_dt).total_seconds()) / 3600.0
+            dist_meters = haversine_meters(
+                item.get("latitude"), item.get("longitude"),
+                existing.get("latitude"), existing.get("longitude")
+            )
+
+            if dist_meters <= 500 and time_diff_hours <= 3.0:
+                matched_idx = idx
+                break
+
+        if matched_idx is not None:
+            print(f"🔗 מאחד דיווח כפול ({item['source']}) לתוך אירוע קיים ב-{deduplicated_list[matched_idx]['verbal_location']}...")
+            deduplicated_list[matched_idx] = merge_with_llm(gemini_client, deduplicated_list[matched_idx], item)
+            time.sleep(0.4)
+        else:
+            deduplicated_list.append(item)
+
     json_filename = f"accidents_{target_date}.json"
     with open(json_filename, "w", encoding="utf-8") as f:
-        json.dump(enriched_list, f, ensure_ascii=False, indent=2)
+        json.dump(deduplicated_list, f, ensure_ascii=False, indent=2)
 
     values = []
-    for item in enriched_list:
+    for item in deduplicated_list:
         seed = f"{item['source']}|{item['raw_text']}"
         r_hash = hashlib.sha256(seed.encode("utf-8")).hexdigest()
         values.append((item["source"], json.dumps(item, ensure_ascii=False), r_hash, item["published_date"]))
@@ -183,7 +249,7 @@ def enrich_and_upload(raw_records: List[dict]):
                 cur.execute("SELECT COUNT(*) FROM traffic_incidents;")
                 total_db = cur.fetchone()[0]
             conn.commit()
-        print(f"🚀 הצלחה! עובדו {len(values)} תאונות מאומתות מתאריך {target_date}. סה\"כ בטבלה ב-Neon כעת: {total_db} רשומות!")
+        print(f"🚀 הצלחה! עובדו ואוחדו {len(values)} תאונות ייחודיות מתאריך {target_date}. סה\"כ בטבלה ב-Neon כעת: {total_db} רשומות!")
     else:
         print(f"ℹ️ לאחר סינון סמנטי, לא נמצאו תאונות דרכים להוספה עבור {target_date}.")
 
@@ -191,8 +257,8 @@ def enrich_and_upload(raw_records: List[dict]):
 async def main():
     tg_data = await collect_telegram()
     rss_data = collect_rss()
-    unique_map = {f"{r['source']}|{r['raw_text']}": r for r in (tg_data + rss_data)}
-    enrich_and_upload(list(unique_map.values()))
+    all_records = tg_data + rss_data
+    enrich_and_upload(all_records)
 
 
 if __name__ == "__main__":
