@@ -3,16 +3,12 @@ on:
   schedule:
     - cron: '17 2 * * *'
   workflow_dispatch:
-    inputs:
-      target_day:
-        description: 'איזה יום לאסוף בבדיקה הידנית? (yesterday או today)'
-        required: true
-        default: 'yesterday'
-        type: choice
-        options:
-          - yesterday
-          - today
-
+  inputs:
+    target_day:
+      description: 'תאריך לאיסוף (yesterday, today, או YYYY-MM-DD)'
+      required: true
+      default: 'yesterday'
+      type: string
 jobs:
   run-etl:
     runs-on: ubuntu-latest
