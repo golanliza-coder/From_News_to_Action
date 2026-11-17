@@ -30,9 +30,16 @@ KEYWORDS = [
     "קורקינט", "התהפך", "התהפכות", "נפגע מרכב", "רוכב אופניים", "דריסה"
 ]
 
+
 IL_TZ = ZoneInfo("Asia/Jerusalem")
 now_il = datetime.now(IL_TZ)
-target_date = now_il.date() if RUN_TARGET == "today" else (now_il - timedelta(days=1)).date()
+if RUN_TARGET == "today":
+    target_date = now_il.date()
+elif RUN_TARGET == "yesterday":
+    target_date = (now_il - timedelta(days=1)).date()
+else:
+    target_date = datetime.strptime(RUN_TARGET, "%Y-%m-%d").date()
+
 start_target = datetime.combine(target_date, datetime.min.time(), tzinfo=IL_TZ)
 end_target = datetime.combine(target_date, datetime.max.time(), tzinfo=IL_TZ)
 
@@ -100,7 +107,7 @@ async def collect_telegram() -> List[dict]:
     channels = ['mdaisrael', 'uh1221', 'hamalnews', 'fireisrael7777']
     async with TelegramClient(StringSession(TG_SESSION), TG_API_ID, TG_API_HASH) as client:
         for ch in channels:
-            async for msg in client.iter_messages(ch, limit=800):
+            async for msg in client.iter_messages(ch, limit=3500):
                 if not msg.date:
                     continue
                 msg_il = msg.date.astimezone(IL_TZ)
