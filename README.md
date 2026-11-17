@@ -102,16 +102,21 @@ From_News_to_Action/
 ├── data/
 │   ├── raw/                       # Raw scraped samples (accident_reports_raw.csv)
 │   ├── processed/                 # Baseline & Agentic benchmark outputs
-│   └── data_dictionary.md         # Schema definitions for Neon PostgreSQL + PostGIS
+│   └── data_dictionary.md         # Schema definitions for baseline data and for Neon PostgreSQL + PostGIS
 ├── notebooks/
-│   ├── 01_eda.ipynb               # Exploratory data analysis on N=219 reports & CBS data
-│   ├── 02_baseline_pipeline.ipynb # Deterministic baseline & Spiderfy error analysis
-│   └── 03_agentic_eval.ipynb      # LangGraph agent evaluation & lift benchmarking
-├── src/                           # Modular scraping, geocoding, and DB utilities
-├── agents/                        # LangGraph nodes, routing logic, tools, and guardrails
-├── reports/
-│   ├── figures/                   # Coverage, severity, vehicle NER, and map screenshots
-│   └── results.md                 # Detailed benchmark comparison & error analysis
+│   ├── EDA _car_accidents_in_Israel_01.ipynb         # Exploratory data analysis on N=219 reports & CBS data
+│   ├── Building the Baseline_02.ipynb                # Deterministic baseline & Spiderfy error analysis
+│   ├── Data Creation03.ipynb                         # Preparing data and run baseline model 
+│   ├── LangGraph _04.ipynb                           # LangGraph agent evaluation & lift benchmarking
+│   ├── PostgreSQL _05.ipynb                          # Loading agent results and update Neon Postgres DB and Dasboard creation
+│   └── Daily_Dashbord _06.ipynb                      # Automatic daily system dashboard
+├── analysis/
+│   ├── agents/                        # LangGraph nodes, routing logic, tools, and guardrails
+│   ├── evaluation/                    # LangGraph nodes, routing logic, tools, and guardrails
+│   ├── reports/                       # LangGraph nodes, routing logic, tools, and guardrails
+│       ├── figures/                   # Coverage, severity, vehicle NER, and map screenshots
+|       ├── results.md                 # Detailed benchmark comparison & error analysis
+│   └── src/                           # Modular scraping, geocoding, and DB utilities
 └── presentation/                  # Final 10-slide executive presentation deck
 ```
 
