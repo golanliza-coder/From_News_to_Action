@@ -17,6 +17,7 @@ from google import genai
 from google.genai import types
 import googlemaps
 
+
 DATABASE_URL = os.environ["DATABASE_URL"]
 GEMINI_KEY = os.environ["GEMINI_API_KEY"]
 MAPS_KEY = os.environ["GOOGLE_MAPS_API_KEY"]
